@@ -7,16 +7,17 @@ import tailwindCaido from "@caido/tailwindcss";
 import path from "path";
 import prefixwrap from "postcss-prefixwrap";
 
-const id = "frontend-vue";
+const id = "satchel";
+
 export default defineConfig({
   id,
-  name: "Frontend Vue",
-  description: "Plugin template with frontend using VueJS",
-  version: "0.0.0",
+  name: "Satchel",
+  description: "Bookmark and organize Caido HTTP history items for later review.",
+  version: "0.1.0",
   author: {
-    name: "Caido Labs Inc.",
-    email: "dev@caido.io",
-    url: "https://caido.io",
+    name: "Caleb Kinney",
+    email: "caleb@typeerror.com",
+    url: "https://typeerror.com",
   },
   plugins: [
     {
@@ -62,10 +63,7 @@ export default defineConfig({
         css: {
           postcss: {
             plugins: [
-              // This plugin wraps the root element in a unique ID
-              // This is necessary to prevent styling conflicts between plugins
               prefixwrap(`#plugin--${id}`),
-
               tailwindcss({
                 corePlugins: {
                   preflight: false,
@@ -74,16 +72,8 @@ export default defineConfig({
                   "./packages/frontend/src/**/*.{vue,ts}",
                   "./node_modules/@caido/primevue/dist/primevue.mjs",
                 ],
-                // Check the [data-mode="dark"] attribute on the <html> element to determine the mode
-                // This attribute is set in the Caido core application
                 darkMode: ["selector", '[data-mode="dark"]'],
-                plugins: [
-                  // This plugin injects the necessary Tailwind classes for PrimeVue components
-                  tailwindPrimeui,
-
-                  // This plugin injects the necessary Tailwind classes for the Caido theme
-                  tailwindCaido,
-                ],
+                plugins: [tailwindPrimeui, tailwindCaido],
               }),
             ],
           },
