@@ -1,17 +1,12 @@
-import type { DefineAPI, SDK } from "caido:plugin";
+import type { SDK } from "caido:plugin";
 
-const generateRandomString = (sdk: SDK, length: number) => {
-  const randomString = Math.random()
-    .toString(36)
-    .substring(2, length + 2);
-  sdk.console.log(`Generating random string: ${randomString}`);
-  return randomString;
-};
+import { registerSatchelApi } from "./api/satchelApi";
+import { initDatabase } from "./db/database";
+import type { API, Events } from "./satchel/satchelTypes";
 
-export type API = DefineAPI<{
-  generateRandomString: typeof generateRandomString;
-}>;
-
-export function init(sdk: SDK<API>) {
-  sdk.api.register("generateRandomString", generateRandomString);
+export async function init(sdk: SDK<API, Events>) {
+  await initDatabase(sdk);
+  registerSatchelApi(sdk);
 }
+
+export type { API, Events };
