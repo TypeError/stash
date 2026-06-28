@@ -7,6 +7,8 @@ import "./styles/index.css";
 import type { FrontendSDK } from "./types";
 import App from "./views/App.vue";
 
+import Tooltip from "primevue/tooltip";
+
 const Commands = {
   open: "stash.open",
   stashRequest: "stash.request",
@@ -165,6 +167,8 @@ export const init = (sdk: FrontendSDK) => {
   });
 
   app.use(SDKPlugin, sdk);
+
+  app.directive("tooltip", Tooltip);
 
   const root = document.createElement("div");
   Object.assign(root.style, {

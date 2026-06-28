@@ -33,12 +33,14 @@ defineEmits<{
         :disabled="count === 0 || loading"
         @click="$emit('clear')"
       />
+
       <Button
         type="button"
         label="Refresh"
-        icon="fas fa-sync-alt"
+        icon="fas fa-refresh"
         size="small"
         severity="secondary"
+        outlined
         :loading="loading"
         @click="$emit('refresh')"
       />
