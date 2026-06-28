@@ -1,6 +1,6 @@
 import type { Request } from "caido:utils";
 
-import type { NewStashedRequest } from "./stashTypes";
+import type { NewStashedRequest, StashRequestInput } from "./stashTypes";
 
 function readString(value: string): string | undefined {
   return value.length > 0 ? value : undefined;
@@ -8,12 +8,13 @@ function readString(value: string): string | undefined {
 
 export function createStashRequestFromCaidoRequest(
   request: Request,
-  caidoRequestId: string,
+  input: StashRequestInput,
 ): NewStashedRequest {
   const now = new Date().toISOString();
 
   return {
-    caidoRequestId,
+    requestId: input.requestId,
+    httpHistoryId: input.httpHistoryId,
     method: readString(request.getMethod()),
     url: readString(request.getUrl()),
     host: readString(request.getHost()),

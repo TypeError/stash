@@ -9,4 +9,5 @@ export async function init(sdk: SDK<API, Events>) {
   registerStashApi(sdk);
 }
 
-export type { API, Events };
+export type { API, Events } from "./stash/stashTypes";
+export type { StashRequestInput } from "./stash/stashTypes";

@@ -13,9 +13,9 @@ function readBodyText(body: { toText(): string } | undefined): string | undefine
 
 export async function loadRequestDetails(
   sdk: SDK,
-  caidoRequestId: string,
+  requestId: string,
 ): Promise<StashRequestDetails | undefined> {
-  const pair = await sdk.requests.get(caidoRequestId);
+  const pair = await sdk.requests.get(requestId);
 
   if (pair === undefined) {
     return undefined;

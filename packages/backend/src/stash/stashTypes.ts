@@ -12,9 +12,15 @@ export type StashUpdateReason = "stash" | "unstash" | "clear";
 
 export type Result<T> = { kind: "Error"; error: string } | { kind: "Ok"; value: T };
 
+export type StashRequestInput = {
+  requestId: string;
+  httpHistoryId: string | undefined;
+};
+
 export type StashedRequest = {
   id: number;
-  caidoRequestId: string;
+  requestId: string;
+  httpHistoryId: string | undefined;
   method: string | undefined;
   url: string | undefined;
   host: string | undefined;
@@ -42,7 +48,8 @@ export type StashedRequestDetail = StashedRequest & {
 };
 
 export type NewStashedRequest = {
-  caidoRequestId: string;
+  requestId: string;
+  httpHistoryId: string | undefined;
   method: string | undefined;
   url: string | undefined;
   host: string | undefined;

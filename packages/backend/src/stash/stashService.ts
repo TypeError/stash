@@ -13,6 +13,7 @@ import {
 import type {
   Events,
   Result,
+  StashRequestInput,
   StashedRequest,
   StashedRequestDetail,
   StashedRequestRow,
@@ -42,7 +43,8 @@ function buildUnavailableDetail(row: StashedRequestRow): StashedRequestDetail {
 function buildStashedRequest(row: StashedRequestRow): StashedRequest {
   return {
     id: row.id,
-    caidoRequestId: row.caidoRequestId,
+    requestId: row.requestId,
+    httpHistoryId: row.httpHistoryId,
     method: row.method,
     url: row.url,
     host: row.host,
@@ -54,33 +56,42 @@ function buildStashedRequest(row: StashedRequestRow): StashedRequest {
 
 export async function stashRequests(
   sdk: SDK<unknown, Events>,
-  requestIds: string[],
+  inputs: StashRequestInput[],
 ): Promise<Result<{ stashed: number; skipped: number }>> {
   try {
     const db = await sdk.meta.db();
 
     let stashed = 0;
     let skipped = 0;
+    let updated = 0;
 
-    for (const requestId of requestIds) {
-      const pair = await sdk.requests.get(requestId);
+    for (const input of inputs) {
+      if (input.requestId === "") {
+        skipped += 1;
+        continue;
+      }
+
+      const pair = await sdk.requests.get(input.requestId);
 
       if (pair === undefined) {
         skipped += 1;
         continue;
       }
 
-      const stashedRequest = createStashRequestFromCaidoRequest(pair.request, requestId);
-      const inserted = await insertStashedRequest(db, stashedRequest);
+      const stashedRequest = createStashRequestFromCaidoRequest(pair.request, input);
+      const stashResult = await insertStashedRequest(db, stashedRequest);
 
-      if (inserted) {
+      if (stashResult === "inserted") {
         stashed += 1;
+      } else if (stashResult === "updated") {
+        updated += 1;
+        skipped += 1;
       } else {
         skipped += 1;
       }
     }
 
-    if (stashed > 0) {
+    if (stashed > 0 || updated > 0) {
       emitStashUpdated(sdk, "stash");
     }
 
@@ -106,17 +117,17 @@ export async function listStashedRequests(
 
 export async function getStashedRequest(
   sdk: SDK,
-  requestId: number,
+  stashedRequestId: number,
 ): Promise<Result<StashedRequestDetail | undefined>> {
   try {
     const db = await sdk.meta.db();
-    const row = await getStashRequestRow(db, requestId);
+    const row = await getStashRequestRow(db, stashedRequestId);
 
     if (row === undefined) {
       return okResult(undefined);
     }
 
-    const details = await loadRequestDetails(sdk, row.caidoRequestId);
+    const details = await loadRequestDetails(sdk, row.requestId);
 
     if (details === undefined) {
       return okResult(buildUnavailableDetail(row));
@@ -124,7 +135,8 @@ export async function getStashedRequest(
 
     return okResult({
       id: row.id,
-      caidoRequestId: row.caidoRequestId,
+      requestId: row.requestId,
+      httpHistoryId: row.httpHistoryId,
       method: details.method,
       url: details.url,
       host: details.host,
@@ -142,11 +154,11 @@ export async function getStashedRequest(
 
 export async function unstashRequest(
   sdk: SDK<unknown, Events>,
-  requestId: number,
+  stashedRequestId: number,
 ): Promise<Result<{ unstashed: boolean }>> {
   try {
     const db = await sdk.meta.db();
-    const deletedRows = await deleteStashedRequestRow(db, requestId);
+    const deletedRows = await deleteStashedRequestRow(db, stashedRequestId);
 
     if (deletedRows === 0) {
       return okResult({ unstashed: false });
