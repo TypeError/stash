@@ -1,7 +1,6 @@
 import { defineConfig } from "@caido-community/dev";
 import vue from "@vitejs/plugin-vue";
 import tailwindcss from "tailwindcss";
-// @ts-expect-error no declared types at this time
 import tailwindPrimeui from "tailwindcss-primeui";
 import tailwindCaido from "@caido/tailwindcss";
 import path from "path";
@@ -12,7 +11,7 @@ const id = "stash";
 export default defineConfig({
   id,
   name: "Stash",
-  description: "Keep interesting HTTP History requests for later review.",
+  description: "Stash interesting HTTP History requests for later review.",
   version: "0.1.0",
   author: {
     name: "Caleb Kinney",
