@@ -1,18 +1,18 @@
 import type { DefineAPI, DefineEvents } from "caido:plugin";
 
 import type {
-  addRequestsToStash,
-  clearStashedItems,
-  unstashItem,
-  getStashItem,
-  listStashItems,
+  clearStash,
+  getStashedRequest,
+  listStashedRequests,
+  stashRequests,
+  unstashRequest,
 } from "./stashService";
 
-export type StashUpdateReason = "add" | "delete" | "clear";
+export type StashUpdateReason = "stash" | "unstash" | "clear";
 
 export type Result<T> = { kind: "Error"; error: string } | { kind: "Ok"; value: T };
 
-export type StashItem = {
+export type StashedRequest = {
   id: number;
   caidoRequestId: string;
   method: string | undefined;
@@ -23,7 +23,7 @@ export type StashItem = {
   updatedAt: string;
 };
 
-export type StashDetail = StashItem & {
+export type StashedRequestDetail = StashedRequest & {
   available: boolean;
   request:
     | {
@@ -79,9 +79,9 @@ export type Events = DefineEvents<{
 }>;
 
 export type API = DefineAPI<{
-  addRequests: typeof addRequestsToStash;
-  listItems: typeof listStashItems;
-  getItem: typeof getStashItem;
-  deleteItem: typeof unstashItem;
-  clearItems: typeof clearStashedItems;
+  stashRequests: typeof stashRequests;
+  listStashedRequests: typeof listStashedRequests;
+  getStashedRequest: typeof getStashedRequest;
+  unstashRequest: typeof unstashRequest;
+  clearStash: typeof clearStash;
 }>;

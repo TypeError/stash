@@ -8,8 +8,9 @@ import type { FrontendSDK } from "./types";
 import App from "./views/App.vue";
 
 const Commands = {
-  add: "stash.add",
   open: "stash.open",
+  stashRequest: "stash.request",
+  stashSelectedRequests: "stash.selectedRequests",
 } as const;
 
 type CommandContext =
@@ -70,7 +71,7 @@ function getRequestIdsFromContext(context: CommandContext): string[] {
   return [];
 }
 
-function registerStashCommand(sdk: FrontendSDK) {
+function registerStashCommands(sdk: FrontendSDK) {
   sdk.commands.register(Commands.open, {
     name: "Open Stash",
     group: "Stash",
@@ -81,66 +82,80 @@ function registerStashCommand(sdk: FrontendSDK) {
 
   sdk.commandPalette.register(Commands.open);
 
-  sdk.commands.register(Commands.add, {
-    name: "Add to Stash",
+  sdk.commands.register(Commands.stashSelectedRequests, {
+    name: "Stash selected requests",
     group: "Stash",
     run: (context) => {
-      void addRequestsFromContext(sdk, context);
+      void stashRequestsFromContext(sdk, context);
     },
-    when: (context) => getRequestIdsFromContext(context).length > 0,
+    when: (context) =>
+      context.type === "RequestRowContext" && getRequestIdsFromContext(context).length > 0,
+  });
+
+  sdk.commands.register(Commands.stashRequest, {
+    name: "Stash request",
+    group: "Stash",
+    run: (context) => {
+      void stashRequestsFromContext(sdk, context);
+    },
+    when: (context) =>
+      context.type === "ResponseContext" && getRequestIdsFromContext(context).length > 0,
   });
 
   sdk.menu.registerItem({
     type: "RequestRow",
-    commandId: Commands.add,
+    commandId: Commands.stashSelectedRequests,
     leadingIcon: "fas fa-suitcase",
   });
 
   sdk.menu.registerItem({
     type: "Response",
-    commandId: Commands.add,
+    commandId: Commands.stashRequest,
     leadingIcon: "fas fa-suitcase",
   });
 }
 
-async function addRequestsFromContext(sdk: FrontendSDK, context: CommandContext) {
+async function stashRequestsFromContext(sdk: FrontendSDK, context: CommandContext) {
   const requestIds = getRequestIdsFromContext(context);
 
   if (requestIds.length === 0) {
-    sdk.window.showToast("No stashed request selected", {
+    sdk.window.showToast("No request selected to stash.", {
       variant: "warning",
     });
     return;
   }
 
   try {
-    const result = await sdk.backend.addRequests(requestIds);
+    const result = await sdk.backend.stashRequests(requestIds);
+
     if (result.kind === "Error") {
       sdk.window.showToast(result.error, { variant: "error" });
       return;
     }
 
-    const addResult = result.value;
+    const stashResult = result.value;
     const skippedMessage =
-      addResult.skipped > 0
-        ? ` (${addResult.skipped} duplicate or unavailable request${addResult.skipped === 1 ? "" : "s"} skipped)`
+      stashResult.skipped > 0
+        ? ` ${stashResult.skipped} duplicate or unavailable request${
+            stashResult.skipped === 1 ? "" : "s"
+          } skipped.`
         : "";
 
     sdk.window.showToast(
-      `Added ${addResult.added} request${addResult.added === 1 ? "" : "s"} to Stash${skippedMessage}`,
+      `Stashed ${stashResult.stashed} request${stashResult.stashed === 1 ? "" : "s"}.${skippedMessage}`,
       {
-        variant: addResult.added > 0 ? "success" : "warning",
+        variant: stashResult.stashed > 0 ? "success" : "warning",
       },
     );
   } catch (err) {
-    sdk.window.showToast(err instanceof Error ? err.message : "Failed to add request to Stash", {
+    sdk.window.showToast(err instanceof Error ? err.message : "Could not stash request.", {
       variant: "error",
     });
   }
 }
 
 export const init = (sdk: FrontendSDK) => {
-  registerStashCommand(sdk);
+  registerStashCommands(sdk);
 
   const app = createApp(App);
 

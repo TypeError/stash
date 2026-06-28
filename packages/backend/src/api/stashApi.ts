@@ -1,32 +1,32 @@
 import type { SDK } from "caido:plugin";
 
 import {
-  addRequestsToStash,
-  clearStashedItems,
-  unstashItem,
-  getStashItem,
-  listStashItems,
+  clearStash,
+  getStashedRequest,
+  listStashedRequests,
+  stashRequests,
+  unstashRequest,
 } from "../stash/stashService";
 import type { API, Events } from "../stash/stashTypes";
 
 export function registerStashApi(sdk: SDK<API, Events>) {
-  sdk.api.register("addRequests", (_sdk, requestIds: string[]) => {
-    return addRequestsToStash(sdk, requestIds);
+  sdk.api.register("stashRequests", (_sdk, requestIds: string[]) => {
+    return stashRequests(sdk, requestIds);
   });
 
-  sdk.api.register("listItems", (_sdk, limit = 100, offset = 0) => {
-    return listStashItems(sdk, limit, offset);
+  sdk.api.register("listStashedRequests", (_sdk, limit = 100, offset = 0) => {
+    return listStashedRequests(sdk, limit, offset);
   });
 
-  sdk.api.register("getItem", (_sdk, itemId: number) => {
-    return getStashItem(sdk, itemId);
+  sdk.api.register("getStashedRequest", (_sdk, requestId: number) => {
+    return getStashedRequest(sdk, requestId);
   });
 
-  sdk.api.register("deleteItem", (_sdk, itemId: number) => {
-    return unstashItem(sdk, itemId);
+  sdk.api.register("unstashRequest", (_sdk, requestId: number) => {
+    return unstashRequest(sdk, requestId);
   });
 
-  sdk.api.register("clearItems", () => {
-    return clearStashedItems(sdk);
+  sdk.api.register("clearStash", () => {
+    return clearStash(sdk);
   });
 }
