@@ -2,8 +2,8 @@ import type { SDK } from "caido:plugin";
 
 import {
   addRequestsToStash,
-  clearStashItems,
-  deleteStashItem,
+  clearStashedItems,
+  unstashItem,
   getStashItem,
   listStashItems,
 } from "../stash/stashService";
@@ -23,10 +23,10 @@ export function registerStashApi(sdk: SDK<API, Events>) {
   });
 
   sdk.api.register("deleteItem", (_sdk, itemId: number) => {
-    return deleteStashItem(sdk, itemId);
+    return unstashItem(sdk, itemId);
   });
 
   sdk.api.register("clearItems", () => {
-    return clearStashItems(sdk);
+    return clearStashedItems(sdk);
   });
 }

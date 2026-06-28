@@ -1,16 +1,16 @@
 import type { SDK } from "caido:plugin";
 
-import { createStashSaveFromCaidoRequest } from "./requestSave";
+import { createStashRequestFromCaidoRequest } from "./stashedRequest";
 import { loadRequestDetails } from "./requestDetails";
 import { emitStashUpdated } from "./stashEvents";
 import {
-  clearStashSaveRows,
-  deleteStashSaveRow,
-  getStashSaveRow,
-  insertStashSave,
-  listStashSaveRows,
+  clearStashedRequestRows,
+  deleteStashedRequestRow,
+  getStashRequestRow,
+  insertStashedRequest,
+  listStashRequestRows,
 } from "./stashRepository";
-import type { Events, Result, StashDetail, StashItem, StashSaveRow } from "./stashTypes";
+import type { Events, Result, StashDetail, StashItem, StashedRequestRow } from "./stashTypes";
 
 function errorResult<T>(error: string): Result<T> {
   return { kind: "Error", error };
@@ -24,7 +24,7 @@ function messageFromError(err: unknown, fallback: string) {
   return err instanceof Error && err.message.length > 0 ? err.message : fallback;
 }
 
-function buildUnavailableDetail(row: StashSaveRow): StashDetail {
+function buildUnavailableDetail(row: StashedRequestRow): StashDetail {
   return {
     ...buildItem(row),
     available: false,
@@ -33,7 +33,7 @@ function buildUnavailableDetail(row: StashSaveRow): StashDetail {
   };
 }
 
-function buildItem(row: StashSaveRow): StashItem {
+function buildItem(row: StashedRequestRow): StashItem {
   return {
     id: row.id,
     caidoRequestId: row.caidoRequestId,
@@ -64,8 +64,8 @@ export async function addRequestsToStash(
         continue;
       }
 
-      const save = createStashSaveFromCaidoRequest(pair.request, requestId);
-      const inserted = await insertStashSave(db, save);
+      const stashedRequest = createStashRequestFromCaidoRequest(pair.request, requestId);
+      const inserted = await insertStashedRequest(db, stashedRequest);
 
       if (inserted) {
         added += 1;
@@ -80,7 +80,7 @@ export async function addRequestsToStash(
 
     return okResult({ added, skipped });
   } catch (err) {
-    return errorResult(messageFromError(err, "Could not save request."));
+    return errorResult(messageFromError(err, "Could not stash request."));
   }
 }
 
@@ -91,10 +91,10 @@ export async function listStashItems(
 ): Promise<Result<StashItem[]>> {
   try {
     const db = await sdk.meta.db();
-    const rows = await listStashSaveRows(db, limit, offset);
+    const rows = await listStashRequestRows(db, limit, offset);
     return okResult(rows.map(buildItem));
   } catch (err) {
-    return errorResult(messageFromError(err, "Could not load saved requests."));
+    return errorResult(messageFromError(err, "Could not load stashed requests."));
   }
 }
 
@@ -104,7 +104,7 @@ export async function getStashItem(
 ): Promise<Result<StashDetail | undefined>> {
   try {
     const db = await sdk.meta.db();
-    const row = await getStashSaveRow(db, itemId);
+    const row = await getStashRequestRow(db, itemId);
 
     if (row === undefined) {
       return okResult(undefined);
@@ -134,13 +134,13 @@ export async function getStashItem(
   }
 }
 
-export async function deleteStashItem(
+export async function unstashItem(
   sdk: SDK<unknown, Events>,
   itemId: number,
 ): Promise<Result<{ deleted: boolean }>> {
   try {
     const db = await sdk.meta.db();
-    const deletedRows = await deleteStashSaveRow(db, itemId);
+    const deletedRows = await deleteStashedRequestRow(db, itemId);
 
     if (deletedRows === 0) {
       return okResult({ deleted: false });
@@ -150,16 +150,16 @@ export async function deleteStashItem(
 
     return okResult({ deleted: true });
   } catch (err) {
-    return errorResult(messageFromError(err, "Could not remove saved request."));
+    return errorResult(messageFromError(err, "Could not remove stashed request."));
   }
 }
 
-export async function clearStashItems(
+export async function clearStashedItems(
   sdk: SDK<unknown, Events>,
 ): Promise<Result<{ deletedItems: number }>> {
   try {
     const db = await sdk.meta.db();
-    const deletedItems = await clearStashSaveRows(db);
+    const deletedItems = await clearStashedRequestRows(db);
 
     if (deletedItems > 0) {
       emitStashUpdated(sdk, "clear");
@@ -167,6 +167,6 @@ export async function clearStashItems(
 
     return okResult({ deletedItems });
   } catch (err) {
-    return errorResult(messageFromError(err, "Could not clear saved requests."));
+    return errorResult(messageFromError(err, "Could not clear stashed requests."));
   }
 }

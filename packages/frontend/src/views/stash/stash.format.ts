@@ -1,4 +1,4 @@
-export function formatSavedAt(value: string): string {
+export function formatStashedAt(value: string): string {
   if (value.length === 0) {
     return "-";
   }

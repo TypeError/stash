@@ -107,7 +107,7 @@ async function addRequestsFromContext(sdk: FrontendSDK, context: CommandContext)
   const requestIds = getRequestIdsFromContext(context);
 
   if (requestIds.length === 0) {
-    sdk.window.showToast("No saved request selected", {
+    sdk.window.showToast("No stashed request selected", {
       variant: "warning",
     });
     return;

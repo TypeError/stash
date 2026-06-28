@@ -2,7 +2,7 @@
 import Button from "primevue/button";
 import { computed } from "vue";
 
-import { formatPath, formatSavedAt } from "./stash.format";
+import { formatPath, formatStashedAt } from "./stash.format";
 import type { StashItem } from "./stash.types";
 
 const props = defineProps<{
@@ -44,7 +44,7 @@ const canOpenInHttpHistory = computed(() => {
     </td>
 
     <td class="px-3 py-2 align-middle">
-      {{ formatSavedAt(item.createdAt) }}
+      {{ formatStashedAt(item.createdAt) }}
     </td>
 
     <td class="px-3 py-2 align-middle">

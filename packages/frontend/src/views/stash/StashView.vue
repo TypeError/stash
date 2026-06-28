@@ -5,7 +5,7 @@ import { useSDK } from "@/plugins/sdk";
 import StashEmptyState from "./StashEmptyState.vue";
 import StashTable from "./StashTable.vue";
 import StashToolbar from "./StashToolbar.vue";
-import { clearStashItems, deleteStashItem, listStashItems } from "./stash.api.js";
+import { clearStashItems, deleteStashItem as unstashItem, listStashItems } from "./stash.api.js";
 import {
   getUniqueHttpHistoryRowIds,
   isHttpHistoryRowId,
@@ -29,7 +29,7 @@ function handleOpenInHttpHistory(item: StashItem) {
   }
 
   if (!isHttpHistoryRowId(item.caidoRequestId)) {
-    activeSdk.window.showToast("Saved request is missing a valid HTTP History row id.", {
+    activeSdk.window.showToast("Stashed request is missing a valid HTTP History row id.", {
       variant: "error",
     });
     return;
@@ -38,7 +38,7 @@ function handleOpenInHttpHistory(item: StashItem) {
   showHttpHistoryRow(activeSdk, item.caidoRequestId);
 }
 
-function handleShowSavedInHttpHistory() {
+function handleShowStashedInHttpHistory() {
   const activeSdk = sdk;
 
   if (activeSdk === undefined) {
@@ -49,7 +49,7 @@ function handleShowSavedInHttpHistory() {
   const rowIds = getUniqueHttpHistoryRowIds(items.value);
 
   if (rowIds.length === 0) {
-    activeSdk.window.showToast("No saved requests can be shown in HTTP History.", {
+    activeSdk.window.showToast("No stashed requests can be shown in HTTP History.", {
       variant: "error",
     });
     return;
@@ -90,7 +90,7 @@ async function handleDelete(item: StashItem) {
   }
 
   try {
-    const result = await deleteStashItem(sdk, item.id);
+    const result = await unstashItem(sdk, item.id);
 
     if (result.kind === "Error") {
       sdk.window.showToast(result.error, { variant: "error" });
@@ -99,10 +99,10 @@ async function handleDelete(item: StashItem) {
 
     if (result.value.deleted) {
       await loadItems();
-      sdk.window.showToast("Deleted saved request", { variant: "success" });
+      sdk.window.showToast("Unstashed request", { variant: "success" });
     }
   } catch (err) {
-    sdk.window.showToast(err instanceof Error ? err.message : "Failed to delete saved request", {
+    sdk.window.showToast(err instanceof Error ? err.message : "Failed to unstash request", {
       variant: "error",
     });
   }
@@ -115,7 +115,7 @@ async function handleClear() {
   }
 
   const confirmed = window.confirm(
-    "Clear all saved Stash requests? This only removes them from Stash and does not delete Caido HTTP History.",
+    "Clear all stashed requests? This only removes them from Stash and does not delete Caido HTTP History.",
   );
 
   if (!confirmed) {
@@ -132,13 +132,13 @@ async function handleClear() {
 
     await loadItems();
     sdk.window.showToast(
-      `Cleared ${result.value.deletedItems} saved request${result.value.deletedItems === 1 ? "" : "s"}`,
+      `Cleared ${result.value.deletedItems} stashed request${result.value.deletedItems === 1 ? "" : "s"}`,
       {
         variant: "success",
       },
     );
   } catch (err) {
-    sdk.window.showToast(err instanceof Error ? err.message : "Failed to clear saved requests", {
+    sdk.window.showToast(err instanceof Error ? err.message : "Failed to clear stashed requests", {
       variant: "error",
     });
   }
@@ -176,7 +176,7 @@ onUnmounted(() => {
           :items="items"
           :loading="loading"
           @open="handleOpenInHttpHistory"
-          @show-saved="handleShowSavedInHttpHistory"
+          @show-stashed="handleShowStashedInHttpHistory"
           @delete="handleDelete"
         />
       </div>

@@ -1,15 +1,15 @@
 import type { Request } from "caido:utils";
 
-import type { NewStashSave } from "./stashTypes";
+import type { NewStashedRequest } from "./stashTypes";
 
 function readString(value: string): string | undefined {
   return value.length > 0 ? value : undefined;
 }
 
-export function createStashSaveFromCaidoRequest(
+export function createStashRequestFromCaidoRequest(
   request: Request,
   caidoRequestId: string,
-): NewStashSave {
+): NewStashedRequest {
   const now = new Date().toISOString();
 
   return {

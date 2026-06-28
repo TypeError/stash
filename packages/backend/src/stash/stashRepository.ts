@@ -1,6 +1,6 @@
 import type { Database, Parameter } from "sqlite";
 
-import type { NewStashSave, StashSaveRow } from "./stashTypes";
+import type { NewStashedRequest, StashedRequestRow } from "./stashTypes";
 
 function readString(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined;
@@ -18,7 +18,7 @@ function nullableParameter(value: string | undefined): Parameter {
   return value === undefined ? null : value;
 }
 
-function mapStashSaveRow(row: Record<string, unknown>): StashSaveRow {
+function mapStashedRequestRow(row: Record<string, unknown>): StashedRequestRow {
   return {
     id: readRequiredNumber(row.id),
     caidoRequestId: readRequiredString(row.caidoRequestId),
@@ -107,7 +107,10 @@ export async function migrateStashStorage(db: Database) {
   `);
 }
 
-export async function insertStashSave(db: Database, save: NewStashSave): Promise<boolean> {
+export async function insertStashedRequest(
+  db: Database,
+  stashedRequest: NewStashedRequest,
+): Promise<boolean> {
   const stmt = await db.prepare(`
     INSERT OR IGNORE INTO stash_items (
       caido_request_id,
@@ -122,23 +125,23 @@ export async function insertStashSave(db: Database, save: NewStashSave): Promise
   `);
 
   const result = await stmt.run(
-    save.caidoRequestId,
-    nullableParameter(save.method),
-    nullableParameter(save.url),
-    nullableParameter(save.host),
-    nullableParameter(save.path),
-    save.createdAt,
-    save.updatedAt,
+    stashedRequest.caidoRequestId,
+    nullableParameter(stashedRequest.method),
+    nullableParameter(stashedRequest.url),
+    nullableParameter(stashedRequest.host),
+    nullableParameter(stashedRequest.path),
+    stashedRequest.createdAt,
+    stashedRequest.updatedAt,
   );
 
   return result.changes > 0;
 }
 
-export async function listStashSaveRows(
+export async function listStashRequestRows(
   db: Database,
   limit: number,
   offset: number,
-): Promise<StashSaveRow[]> {
+): Promise<StashedRequestRow[]> {
   const stmt = await db.prepare(`
     SELECT
       id,
@@ -156,13 +159,13 @@ export async function listStashSaveRows(
   `);
 
   const rows = await stmt.all<Record<string, unknown>>(limit, offset);
-  return rows.map(mapStashSaveRow);
+  return rows.map(mapStashedRequestRow);
 }
 
-export async function getStashSaveRow(
+export async function getStashRequestRow(
   db: Database,
   itemId: number,
-): Promise<StashSaveRow | undefined> {
+): Promise<StashedRequestRow | undefined> {
   const stmt = await db.prepare(`
     SELECT
       id,
@@ -178,10 +181,10 @@ export async function getStashSaveRow(
   `);
 
   const row = await stmt.get<Record<string, unknown>>(itemId);
-  return row ? mapStashSaveRow(row) : undefined;
+  return row ? mapStashedRequestRow(row) : undefined;
 }
 
-export async function deleteStashSaveRow(db: Database, itemId: number) {
+export async function deleteStashedRequestRow(db: Database, itemId: number) {
   const stmt = await db.prepare(`
     DELETE FROM stash_items
     WHERE id = ?
@@ -191,7 +194,7 @@ export async function deleteStashSaveRow(db: Database, itemId: number) {
   return result.changes;
 }
 
-export async function clearStashSaveRows(db: Database) {
+export async function clearStashedRequestRows(db: Database) {
   const stmt = await db.prepare("DELETE FROM stash_items");
   const result = await stmt.run();
   return result.changes;

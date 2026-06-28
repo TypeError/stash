@@ -17,7 +17,7 @@ defineEmits<{
     <div>
       <h1 class="m-0 text-xl font-semibold">Stash</h1>
       <p class="mt-1 mb-0 text-sm text-surface-400">
-        Save interesting HTTP History requests for later. {{ count }} saved request{{
+        Stash interesting HTTP History requests for later. {{ count }} stashed request{{
           count === 1 ? "" : "s"
         }}.
       </p>

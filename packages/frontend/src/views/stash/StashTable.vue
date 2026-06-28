@@ -12,11 +12,11 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   open: [item: StashItem];
-  showSaved: [];
+  showStashed: [];
   delete: [item: StashItem];
 }>();
 
-const hasSavedRequestIds = computed(() => {
+const hasStashedRequestIds = computed(() => {
   return props.items.some((item) => hasRequestId(item));
 });
 
@@ -30,12 +30,12 @@ function hasRequestId(item: StashItem) {
     <div class="flex justify-end">
       <Button
         type="button"
-        label="Show saved in HTTP History"
+        label="Show stashed in HTTP History"
         icon="fas fa-filter"
         size="small"
         severity="secondary"
-        :disabled="!hasSavedRequestIds"
-        @click="emit('showSaved')"
+        :disabled="!hasStashedRequestIds"
+        @click="emit('showStashed')"
       />
     </div>
 
@@ -47,18 +47,18 @@ function hasRequestId(item: StashItem) {
             <th class="px-3 py-2 font-medium">Method</th>
             <th class="px-3 py-2 font-medium">Host</th>
             <th class="px-3 py-2 font-medium">Path</th>
-            <th class="px-3 py-2 font-medium">Saved</th>
+            <th class="px-3 py-2 font-medium">Stashed</th>
             <th class="px-3 py-2 text-right font-medium">Actions</th>
           </tr>
         </thead>
 
         <tbody>
           <tr v-if="props.loading">
-            <td class="px-3 py-4 text-surface-400" colspan="6">Loading saved requests...</td>
+            <td class="px-3 py-4 text-surface-400" colspan="6">Loading stashed requests...</td>
           </tr>
 
           <tr v-else-if="props.items.length === 0">
-            <td class="px-3 py-4 text-surface-400" colspan="6">No saved requests found.</td>
+            <td class="px-3 py-4 text-surface-400" colspan="6">No stashed requests found.</td>
           </tr>
 
           <StashTableRow
