@@ -1335,6 +1335,16 @@ export default defineConfig({
         },
       },
       {
+        files: [
+          "packages/backend/src/satchel/**/*.ts",
+          "packages/frontend/src/views/satchel/**/*.ts",
+          "packages/frontend/src/views/satchel/**/*.vue",
+        ],
+        rules: {
+          "typescript/no-restricted-types": "off",
+        },
+      },
+      {
         files: ["**/*.vue"],
         globals: {
           AbortController: "readonly",
