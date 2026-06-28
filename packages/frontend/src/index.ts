@@ -7,40 +7,134 @@ import "./styles/index.css";
 import type { FrontendSDK } from "./types";
 import App from "./views/App.vue";
 
-// This is the entry point for the frontend plugin
+const Commands = {
+  add: "satchel.add",
+} as const;
+
+type CommandContext =
+  | { type: "BaseContext" }
+  | {
+      type: "RequestRowContext";
+      requests: {
+        id: string;
+      }[];
+    }
+  | {
+      type: "RequestContext";
+      request: {
+        raw: string;
+      };
+      selection: string;
+    }
+  | {
+      type: "ResponseContext";
+      request: {
+        id: string;
+      };
+      response: {
+        id: string;
+      };
+      selection: string;
+    };
+
+function getRequestIdsFromContext(context: CommandContext): string[] {
+  if (context.type === "RequestRowContext") {
+    return [
+      ...new Set(context.requests.map((request) => request.id).filter((id) => id.length > 0)),
+    ];
+  }
+
+  if (context.type === "ResponseContext" && context.request.id.length > 0) {
+    return [context.request.id];
+  }
+
+  return [];
+}
+
+function registerSatchelCommand(sdk: FrontendSDK) {
+  sdk.commands.register(Commands.add, {
+    name: "Add to Satchel",
+    group: "Satchel",
+    run: (context) => {
+      void addRequestsFromContext(sdk, context);
+    },
+  });
+
+  sdk.menu.registerItem({
+    type: "RequestRow",
+    commandId: Commands.add,
+    leadingIcon: "fas fa-suitcase",
+  });
+
+  sdk.menu.registerItem({
+    type: "Request",
+    commandId: Commands.add,
+    leadingIcon: "fas fa-suitcase",
+  });
+
+  sdk.menu.registerItem({
+    type: "Response",
+    commandId: Commands.add,
+    leadingIcon: "fas fa-suitcase",
+  });
+}
+
+async function addRequestsFromContext(sdk: FrontendSDK, context: CommandContext) {
+  const requestIds = getRequestIdsFromContext(context);
+
+  if (requestIds.length === 0) {
+    sdk.window.showToast("No saved request selected", {
+      variant: "warning",
+    });
+    return;
+  }
+
+  try {
+    const result = await sdk.backend.addRequests(requestIds);
+    const skippedMessage =
+      result.skipped > 0
+        ? ` (${result.skipped} duplicate or unavailable request${result.skipped === 1 ? "" : "s"} skipped)`
+        : "";
+
+    sdk.window.showToast(
+      `Added ${result.added} request${result.added === 1 ? "" : "s"} to Satchel${skippedMessage}`,
+      {
+        variant: result.added > 0 ? "success" : "warning",
+      },
+    );
+  } catch (err) {
+    sdk.window.showToast(err instanceof Error ? err.message : "Failed to add request to Satchel", {
+      variant: "error",
+    });
+  }
+}
+
 export const init = (sdk: FrontendSDK) => {
+  registerSatchelCommand(sdk);
+
   const app = createApp(App);
 
-  // Load the PrimeVue component library
   app.use(PrimeVue, {
     unstyled: true,
     pt: Classic,
   });
 
-  // Provide the FrontendSDK
   app.use(SDKPlugin, sdk);
 
-  // Create the root element for the app
   const root = document.createElement("div");
   Object.assign(root.style, {
     height: "100%",
     width: "100%",
   });
+  root.id = "plugin--frontend-vue";
 
-  // Set the ID of the root element
-  // Replace this with the value of the prefixWrap plugin in caido.config.ts
-  // This is necessary to prevent styling conflicts between plugins
-  root.id = `plugin--frontend-vue`;
-
-  // Mount the app to the root element
   app.mount(root);
 
-  // Add the page to the navigation
-  // Make sure to use a unique name for the page
-  sdk.navigation.addPage("/my-plugin", {
+  sdk.navigation.addPage("/satchel", {
     body: root,
   });
 
-  // Add a sidebar item
-  sdk.sidebar.registerItem("My Plugin", "/my-plugin");
+  sdk.sidebar.registerItem("Satchel", "/satchel", {
+    icon: "fas fa-suitcase",
+  });
 };
