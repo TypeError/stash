@@ -68,7 +68,10 @@ function formatText(value: string | undefined) {
         v-else-if="detail === undefined"
         class="rounded border border-surface-700 bg-surface-800 px-3 py-2 text-surface-300"
       >
-        Stashed request details are not available.
+        <div class="font-medium text-surface-200">Request details unavailable.</div>
+        <div class="mt-1">
+          This Stash entry still exists, but the original HTTP History request could not be loaded.
+        </div>
       </div>
 
       <div v-else class="grid gap-4">
@@ -99,7 +102,11 @@ function formatText(value: string | undefined) {
           v-if="!detail.available"
           class="rounded border border-surface-700 bg-surface-800 px-3 py-2 text-surface-300"
         >
-          This request is no longer available in Caido HTTP History.
+          <div class="font-medium text-surface-200">Request details unavailable.</div>
+          <div class="mt-1">
+            This Stash entry still exists, but the original HTTP History request could not be
+            loaded.
+          </div>
         </div>
 
         <div v-else class="grid gap-4 lg:grid-cols-2">

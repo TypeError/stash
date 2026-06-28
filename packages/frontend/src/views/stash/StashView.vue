@@ -67,8 +67,14 @@ const filteredItems = computed(() => {
 
 const tableEmptyMessage = computed(() => {
   return normalizedSearchQuery.value === ""
-    ? "No stashed requests found."
-    : "No stashed requests match your search.";
+    ? "No requests stashed yet."
+    : "No matching stashed requests.";
+});
+
+const tableEmptyDescription = computed(() => {
+  return normalizedSearchQuery.value === ""
+    ? "Stash requests from HTTP History to keep them easy to find later."
+    : "Try a different ID, method, host, path, or URL.";
 });
 
 function handleOpenInHttpHistory(item: StashItem) {
@@ -80,7 +86,7 @@ function handleOpenInHttpHistory(item: StashItem) {
   }
 
   if (!isHttpHistoryId(item.httpHistoryId)) {
-    activeSdk.window.showToast("Stashed request is missing a valid HTTP History row id.", {
+    activeSdk.window.showToast("HTTP History row ID is unavailable.", {
       variant: "error",
     });
     return;
@@ -127,14 +133,14 @@ async function handleOpenDetails(item: StashItem) {
     }
 
     if (result.value === undefined) {
-      detailError.value = "Stashed request could not be found.";
+      detailError.value =
+        "Request details unavailable. This Stash entry still exists, but the original HTTP History request could not be loaded.";
       return;
     }
 
     selectedDetail.value = result.value;
   } catch (err) {
-    detailError.value =
-      err instanceof Error ? err.message : "Failed to load stashed request details";
+    detailError.value = err instanceof Error ? err.message : "Could not load request details.";
   } finally {
     detailLoading.value = false;
   }
@@ -159,7 +165,7 @@ async function loadItems() {
 
     items.value = result.value;
   } catch (err) {
-    error.value = err instanceof Error ? err.message : "Failed to load Stash items";
+    error.value = err instanceof Error ? err.message : "Could not load stashed requests.";
   } finally {
     loading.value = false;
   }
@@ -185,10 +191,10 @@ async function handleUnstash(item: StashItem) {
         detailVisible.value = false;
         selectedDetail.value = undefined;
       }
-      sdk.window.showToast("Unstashed request", { variant: "success" });
+      sdk.window.showToast("Unstashed request.", { variant: "success" });
     }
   } catch (err) {
-    sdk.window.showToast(err instanceof Error ? err.message : "Failed to unstash request", {
+    sdk.window.showToast(err instanceof Error ? err.message : "Could not unstash request.", {
       variant: "error",
     });
   }
@@ -217,14 +223,11 @@ async function handleClear() {
     await loadItems();
     detailVisible.value = false;
     selectedDetail.value = undefined;
-    sdk.window.showToast(
-      `Cleared ${result.value.unstashed} stashed request${result.value.unstashed === 1 ? "" : "s"}`,
-      {
-        variant: "success",
-      },
-    );
+    sdk.window.showToast("Cleared Stash.", {
+      variant: "success",
+    });
   } catch (err) {
-    sdk.window.showToast(err instanceof Error ? err.message : "Failed to clear stashed requests", {
+    sdk.window.showToast(err instanceof Error ? err.message : "Could not clear Stash.", {
       variant: "error",
     });
   }
@@ -239,7 +242,7 @@ async function handleReplay(item: StashItem) {
   try {
     await openRequestInReplay(sdk, item.requestId);
   } catch (err) {
-    sdk.window.showToast(err instanceof Error ? err.message : "Failed to open request in Replay", {
+    sdk.window.showToast(err instanceof Error ? err.message : "Could not send request to Replay.", {
       variant: "error",
     });
   }
@@ -284,6 +287,7 @@ onUnmounted(() => {
 
       <div v-else class="min-h-0 flex-1 overflow-auto">
         <StashTable
+          :empty-description="tableEmptyDescription"
           :empty-message="tableEmptyMessage"
           :items="filteredItems"
           :loading="loading"

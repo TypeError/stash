@@ -8,6 +8,7 @@ import { formatPathWithQuery, formatStashedAt } from "./stash.format";
 import type { StashItem } from "./stash.types.js";
 
 const props = defineProps<{
+  emptyDescription?: string;
   emptyMessage: string;
   items: StashItem[];
   loading: boolean;
@@ -32,12 +33,12 @@ function formatMethod(value: string | undefined) {
   return hasText(value) ? (value as string).toUpperCase() : "-";
 }
 
-type TagSeverity = "secondary" | "success" | "info" | "warn" | "danger" | "contrast";
+type TagSeverity = "secondary" | "success" | "info" | "warn" | "danger";
 
 function getMethodSeverity(value: string | undefined): TagSeverity {
   const method = formatMethod(value);
 
-  if (method === "GET" || method === "HEAD") {
+  if (method === "GET") {
     return "success";
   }
 
@@ -53,8 +54,8 @@ function getMethodSeverity(value: string | undefined): TagSeverity {
     return "danger";
   }
 
-  if (method === "OPTIONS") {
-    return "contrast";
+  if (method === "HEAD" || method === "OPTIONS") {
+    return "secondary";
   }
 
   return "secondary";
@@ -85,7 +86,12 @@ function getMethodSeverity(value: string | undefined): TagSeverity {
         :tableProps="{ 'aria-label': 'Stashed HTTP History requests' }"
       >
         <template #empty>
-          <div class="px-3 py-4 text-sm text-surface-400">{{ props.emptyMessage }}</div>
+          <div class="px-3 py-5 text-sm text-surface-400">
+            <div class="font-medium text-surface-300">{{ props.emptyMessage }}</div>
+            <div v-if="props.emptyDescription !== undefined" class="mt-1 text-surface-500">
+              {{ props.emptyDescription }}
+            </div>
+          </div>
         </template>
 
         <Column field="httpHistoryId" header="History ID" sortable style="width: 6.5rem">
@@ -106,7 +112,7 @@ function getMethodSeverity(value: string | undefined): TagSeverity {
               :value="formatMethod(data.method)"
               :severity="getMethodSeverity(data.method)"
               rounded
-              class="font-mono text-xs"
+              class="font-mono text-[0.7rem] leading-none"
             />
 
             <span v-else class="text-surface-500">-</span>
@@ -127,7 +133,7 @@ function getMethodSeverity(value: string | undefined): TagSeverity {
         <Column field="path" header="Path" sortable style="width: 22rem">
           <template #body="{ data }">
             <span
-              class="block w-full overflow-hidden text-ellipsis whitespace-nowrap"
+              class="block w-full overflow-hidden text-ellipsis whitespace-nowrap font-mono text-xs"
               :title="formatPathWithQuery(data.path, data.url)"
             >
               {{ formatPathWithQuery(data.path, data.url) }}

@@ -64,7 +64,7 @@ const requestIdLabel = computed(() => {
       type="button"
       icon="fas fa-paper-plane"
       size="small"
-      severity="primary"
+      severity="secondary"
       text
       rounded
       :aria-label="`Send to Replay ${requestIdLabel}`"

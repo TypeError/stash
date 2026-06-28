@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
+import { computed } from "vue";
 
-defineProps<{
+const props = defineProps<{
   canShowStashed: boolean;
   count: number;
   loading: boolean;
@@ -15,6 +16,14 @@ defineEmits<{
   showStashed: [];
   "update:searchQuery": [value: string];
 }>();
+
+const stashedRequestCount = computed(() => {
+  if (props.count === 0) {
+    return "No requests stashed.";
+  }
+
+  return `${props.count} request${props.count === 1 ? "" : "s"} stashed.`;
+});
 </script>
 
 <template>
@@ -24,10 +33,8 @@ defineEmits<{
     <div class="min-w-0">
       <h1 class="m-0 text-xl font-semibold">Stash</h1>
       <p class="mt-1 mb-0 text-sm leading-5 text-surface-400">
-        Stash interesting HTTP History requests for later review. {{ count }} request{{
-          count === 1 ? "" : "s"
-        }}
-        stashed.
+        Keep interesting HTTP History requests easy to find and reopen later.
+        {{ stashedRequestCount }}
       </p>
     </div>
 
@@ -69,6 +76,8 @@ defineEmits<{
           label="Show stashed in HTTP History"
           icon="fas fa-filter"
           size="small"
+          severity="secondary"
+          outlined
           :disabled="!canShowStashed || loading"
           @click="$emit('showStashed')"
         />
@@ -79,7 +88,7 @@ defineEmits<{
           icon="fas fa-sync-alt"
           size="small"
           severity="secondary"
-          outlined
+          text
           :loading="loading"
           @click="$emit('refresh')"
         />
@@ -90,7 +99,7 @@ defineEmits<{
           icon="fas fa-broom"
           size="small"
           severity="danger"
-          outlined
+          text
           :disabled="count === 0 || loading"
           @click="$emit('clear')"
         />

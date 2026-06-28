@@ -1,22 +1,11 @@
-<script setup lang="ts">
-import Card from "primevue/card";
-</script>
-
 <template>
-  <Card
-    :pt="{
-      body: { class: 'p-0' },
-      content: { class: 'p-6' },
-    }"
+  <section
+    class="rounded border border-surface-700 bg-surface-800/60 px-4 py-6 text-sm text-surface-100"
   >
-    <template #content>
-      <section class="text-surface-100">
-        <i class="fas fa-box-open mb-3 text-xl text-surface-500" aria-hidden="true" />
-        <h2 class="m-0 text-base font-semibold">No requests stashed yet</h2>
-        <p class="mt-2 mb-0 text-sm text-surface-400">
-          Right-click a request in HTTP History and choose Stash request.
-        </p>
-      </section>
-    </template>
-  </Card>
+    <i class="fas fa-box-open mb-3 text-lg text-surface-500" aria-hidden="true" />
+    <h2 class="m-0 text-base font-semibold">No requests stashed yet.</h2>
+    <p class="mt-2 mb-0 text-surface-400">
+      Stash requests from HTTP History to keep them easy to find later.
+    </p>
+  </section>
 </template>
