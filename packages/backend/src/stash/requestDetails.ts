@@ -1,6 +1,6 @@
 import type { SDK } from "caido:plugin";
 
-import type { SatchelRequestDetails } from "./satchelTypes";
+import type { StashRequestDetails } from "./stashTypes";
 
 function readBodyText(body: { toText(): string } | undefined): string | undefined {
   if (body === undefined) {
@@ -14,7 +14,7 @@ function readBodyText(body: { toText(): string } | undefined): string | undefine
 export async function loadRequestDetails(
   sdk: SDK,
   caidoRequestId: string,
-): Promise<SatchelRequestDetails | undefined> {
+): Promise<StashRequestDetails | undefined> {
   const pair = await sdk.requests.get(caidoRequestId);
 
   if (pair === undefined) {

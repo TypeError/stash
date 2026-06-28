@@ -25,6 +25,14 @@ export default defineConfig({
       es2018: true,
     },
     globals: {
+      defineEmits: "readonly",
+      defineExpose: "readonly",
+      defineModel: "readonly",
+      defineOptions: "readonly",
+      defineProps: "readonly",
+      defineSlots: "readonly",
+      withDefaults: "readonly",
+
       AbortController: "readonly",
       AbortSignal: "readonly",
       AbsoluteOrientationSensor: "readonly",

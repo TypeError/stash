@@ -1,7 +1,7 @@
 import type { Database } from "sqlite";
 
-import { migrateSatchelStorage } from "../satchel/satchelRepository";
+import { migrateStashStorage } from "../stash/stashRepository";
 
 export async function runMigrations(db: Database) {
-  await migrateSatchelStorage(db);
+  await migrateStashStorage(db);
 }

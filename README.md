@@ -1,24 +1,24 @@
-# Satchel
+# Stash
 
-Satchel is a Caido plugin for saving lightweight bookmarks to requests in HTTP History.
+Stash is a Caido plugin for saving lightweight saved requests to requests in HTTP History.
 
-Satchel does not copy full request or response data into its own database. It stores the Caido request ID and a small display cache, then loads full request and response details from Caido when an item is opened.
+Stash does not copy full request or response data into its own database. It stores the Caido request ID and a small display cache, then loads full request and response details from Caido when an item is opened.
 
 ## Scope
 
-Satchel v1 supports:
+Stash v1 supports:
 
 - Add selected HTTP History requests from the context menu.
 - View saved requests in a table.
 - Load request and response details on demand.
-- Delete one Satchel item.
-- Clear all Satchel items.
+- Delete one Stash item.
+- Clear all Stash items.
 
-Satchel v1 does not include replay, snapshots, export, tags, notes, folders, search, or bulk actions.
+Stash v1 does not include replay, snapshots, export, tags, notes, folders, search, or bulk actions.
 
 ## Storage Model
 
-Satchel stores only bookmark rows in the plugin SQLite database:
+Stash stores only saved requests rows in the plugin SQLite database:
 
 - `id`
 - `caido_request_id`
@@ -29,7 +29,7 @@ Satchel stores only bookmark rows in the plugin SQLite database:
 - `created_at`
 - `updated_at`
 
-Caido HTTP History remains the source of truth for full request and response data. Deleting or clearing Satchel items does not delete anything from Caido HTTP History.
+Caido HTTP History remains the source of truth for full request and response data. Deleting or clearing Stash items does not delete anything from Caido HTTP History.
 
 ## Development
 
@@ -54,7 +54,7 @@ vp run build
 
 ## Structure
 
-- `packages/frontend` contains the Satchel page, table, detail panel, commands, and menu registration.
+- `packages/frontend` contains the Stash page, table, detail panel, commands, and menu registration.
 - `packages/backend` contains API registration, SQLite storage, and Caido request detail loading.
-- `packages/backend/src/satchel/satchelRepository.ts` owns Satchel SQL.
-- `packages/backend/src/satchel/requestDetails.ts` loads full request and response details from Caido on demand.
+- `packages/backend/src/stash/stashRepository.ts` owns Stash SQL.
+- `packages/backend/src/stash/requestDetails.ts` loads full request and response details from Caido on demand.

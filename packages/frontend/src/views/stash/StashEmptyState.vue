@@ -14,7 +14,7 @@ import Card from "primevue/card";
         <i class="fas fa-suitcase mb-3 text-xl text-surface-500" aria-hidden="true" />
         <h2 class="m-0 text-base font-semibold">No requests saved yet</h2>
         <p class="mt-2 mb-0 text-sm text-surface-400">
-          Right-click a saved request in HTTP History and choose Add to Satchel.
+          Right-click a saved request in HTTP History and choose Add to Stash.
         </p>
       </section>
     </template>

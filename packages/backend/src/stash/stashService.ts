@@ -1,22 +1,16 @@
 import type { SDK } from "caido:plugin";
 
-import { createBookmarkFromCaidoRequest } from "./requestBookmark";
+import { createStashSaveFromCaidoRequest } from "./requestSave";
 import { loadRequestDetails } from "./requestDetails";
-import { emitSatchelUpdated } from "./satchelEvents";
+import { emitStashUpdated } from "./stashEvents";
 import {
-  clearSatchelBookmarkRows,
-  deleteSatchelBookmarkRow,
-  getSatchelBookmarkRow,
-  insertSatchelBookmark,
-  listSatchelBookmarkRows,
-} from "./satchelRepository";
-import type {
-  Events,
-  Result,
-  SatchelBookmarkRow,
-  SatchelDetail,
-  SatchelItem,
-} from "./satchelTypes";
+  clearStashBookmarkRows,
+  deleteStashBookmarkRow,
+  getStashBookmarkRow,
+  insertStashBookmark,
+  listStashBookmarkRows,
+} from "./stashRepository";
+import type { Events, Result, StashBookmarkRow, StashDetail, StashItem } from "./stashTypes";
 
 function errorResult<T>(error: string): Result<T> {
   return { kind: "Error", error };
@@ -30,7 +24,7 @@ function messageFromError(err: unknown, fallback: string) {
   return err instanceof Error && err.message.length > 0 ? err.message : fallback;
 }
 
-function buildUnavailableDetail(row: SatchelBookmarkRow): SatchelDetail {
+function buildUnavailableDetail(row: StashBookmarkRow): StashDetail {
   return {
     ...buildItem(row),
     available: false,
@@ -39,7 +33,7 @@ function buildUnavailableDetail(row: SatchelBookmarkRow): SatchelDetail {
   };
 }
 
-function buildItem(row: SatchelBookmarkRow): SatchelItem {
+function buildItem(row: StashBookmarkRow): StashItem {
   return {
     id: row.id,
     caidoRequestId: row.caidoRequestId,
@@ -52,7 +46,7 @@ function buildItem(row: SatchelBookmarkRow): SatchelItem {
   };
 }
 
-export async function addRequestsToSatchel(
+export async function addRequestsToStash(
   sdk: SDK<unknown, Events>,
   requestIds: string[],
 ): Promise<Result<{ added: number; skipped: number }>> {
@@ -70,8 +64,8 @@ export async function addRequestsToSatchel(
         continue;
       }
 
-      const bookmark = createBookmarkFromCaidoRequest(pair.request, requestId);
-      const inserted = await insertSatchelBookmark(db, bookmark);
+      const bookmark = createStashSaveFromCaidoRequest(pair.request, requestId);
+      const inserted = await insertStashBookmark(db, bookmark);
 
       if (inserted) {
         added += 1;
@@ -81,7 +75,7 @@ export async function addRequestsToSatchel(
     }
 
     if (added > 0) {
-      emitSatchelUpdated(sdk, "add");
+      emitStashUpdated(sdk, "add");
     }
 
     return okResult({ added, skipped });
@@ -90,27 +84,27 @@ export async function addRequestsToSatchel(
   }
 }
 
-export async function listSatchelItems(
+export async function listStashItems(
   sdk: SDK,
   limit = 100,
   offset = 0,
-): Promise<Result<SatchelItem[]>> {
+): Promise<Result<StashItem[]>> {
   try {
     const db = await sdk.meta.db();
-    const rows = await listSatchelBookmarkRows(db, limit, offset);
+    const rows = await listStashBookmarkRows(db, limit, offset);
     return okResult(rows.map(buildItem));
   } catch (err) {
     return errorResult(messageFromError(err, "Could not load bookmarks."));
   }
 }
 
-export async function getSatchelItem(
+export async function getStashItem(
   sdk: SDK,
   itemId: number,
-): Promise<Result<SatchelDetail | undefined>> {
+): Promise<Result<StashDetail | undefined>> {
   try {
     const db = await sdk.meta.db();
-    const row = await getSatchelBookmarkRow(db, itemId);
+    const row = await getStashBookmarkRow(db, itemId);
 
     if (row === undefined) {
       return okResult(undefined);
@@ -134,25 +128,25 @@ export async function getSatchelItem(
       available: true,
       request: details.request,
       response: details.response,
-    } satisfies SatchelDetail);
+    } satisfies StashDetail);
   } catch (err) {
     return errorResult(messageFromError(err, "Could not load HTTP history item."));
   }
 }
 
-export async function deleteSatchelItem(
+export async function deleteStashItem(
   sdk: SDK<unknown, Events>,
   itemId: number,
 ): Promise<Result<{ deleted: boolean }>> {
   try {
     const db = await sdk.meta.db();
-    const deletedRows = await deleteSatchelBookmarkRow(db, itemId);
+    const deletedRows = await deleteStashBookmarkRow(db, itemId);
 
     if (deletedRows === 0) {
       return okResult({ deleted: false });
     }
 
-    emitSatchelUpdated(sdk, "delete");
+    emitStashUpdated(sdk, "delete");
 
     return okResult({ deleted: true });
   } catch (err) {
@@ -160,15 +154,15 @@ export async function deleteSatchelItem(
   }
 }
 
-export async function clearSatchelItems(
+export async function clearStashItems(
   sdk: SDK<unknown, Events>,
 ): Promise<Result<{ deletedItems: number }>> {
   try {
     const db = await sdk.meta.db();
-    const deletedItems = await clearSatchelBookmarkRows(db);
+    const deletedItems = await clearStashBookmarkRows(db);
 
     if (deletedItems > 0) {
-      emitSatchelUpdated(sdk, "clear");
+      emitStashUpdated(sdk, "clear");
     }
 
     return okResult({ deletedItems });

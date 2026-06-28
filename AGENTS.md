@@ -56,8 +56,8 @@ if (value !== undefined && value !== "") {
 
 - Folders use camelCase, such as `httpHistory`.
 - Component folders use PascalCase, such as `RequestBookmarkPanel`.
-- Regular files use camelCase, such as `useBookmarks.ts`.
-- Command IDs should be namespaced, such as `satchel.save-request`.
+- Regular files use camelCase, such as `useSaved requests.ts`.
+- Command IDs should be namespaced, such as `stash.save-request`.
 
 ## Vue Components
 
@@ -108,12 +108,12 @@ Register commands once, use namespaced IDs, and expose important commands throug
 
 ```ts
 const Commands = {
-  saveRequest: "satchel.save-request",
+  saveRequest: "stash.save-request",
 } as const;
 
 sdk.commands.register(Commands.saveRequest, {
   name: "Save Request",
-  group: "Satchel",
+  group: "Stash",
   run: () => saveCurrentRequest(),
 });
 
@@ -127,17 +127,17 @@ Use the Caido backend SDK for API endpoints, data processing, and findings.
 ```ts
 import { type DefineAPI, type SDK } from "caido:plugin";
 
-function getBookmarks(sdk: SDK) {
-  sdk.console.log("Loading bookmarks");
+function getSaved requests(sdk: SDK) {
+  sdk.console.log("Loading saved requests");
   return [];
 }
 
 export type API = DefineAPI<{
-  getBookmarks: typeof getBookmarks;
+  getSaved requests: typeof getSaved requests;
 }>;
 
 export function init(sdk: SDK<API>) {
-  sdk.api.register("getBookmarks", getBookmarks);
+  sdk.api.register("getSaved requests", getSaved requests);
 }
 ```
 
@@ -147,7 +147,7 @@ Use backend events only when the frontend needs push-style updates.
 import { type DefineEvents, type SDK } from "caido:plugin";
 
 export type BackendEvents = DefineEvents<{
-  "bookmarks-updated": { count: number };
+  "saved requests-updated": { count: number };
 }>;
 
 export type CaidoBackendSDK = SDK<never, BackendEvents>;
@@ -185,7 +185,7 @@ Do not add runtime API existence checks.
 ```ts
 sdk.window.showToast("Saved", { variant: "success" });
 
-sdk.commands.register("satchel.save-request", {
+sdk.commands.register("stash.save-request", {
   name: "Save Request",
   run: () => saveCurrentRequest(),
 });
@@ -238,7 +238,7 @@ Create Caido findings for notable traffic that should be visible outside the plu
 await sdk.findings.create({
   title: `Interesting response ${response.getCode()}`,
   description: `Request ID: ${request.getId()}`,
-  reporter: "Satchel",
+  reporter: "Stash",
   request,
   dedupeKey: `${request.getPath()}-${response.getCode()}`,
 });

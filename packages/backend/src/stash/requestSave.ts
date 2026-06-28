@@ -1,15 +1,15 @@
 import type { Request } from "caido:utils";
 
-import type { NewSatchelBookmark } from "./satchelTypes";
+import type { NewStashBookmark } from "./stashTypes";
 
 function readString(value: string): string | undefined {
   return value.length > 0 ? value : undefined;
 }
 
-export function createBookmarkFromCaidoRequest(
+export function createStashSaveFromCaidoRequest(
   request: Request,
   caidoRequestId: string,
-): NewSatchelBookmark {
+): NewStashBookmark {
   const now = new Date().toISOString();
 
   return {

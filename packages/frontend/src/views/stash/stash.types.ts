@@ -1,4 +1,4 @@
-export type SatchelItem = {
+export type StashItem = {
   id: number;
   caidoRequestId: string;
   method: string | undefined;
@@ -9,7 +9,7 @@ export type SatchelItem = {
   updatedAt: string;
 };
 
-export type SatchelDetail = SatchelItem & {
+export type StashDetail = StashItem & {
   available: boolean;
   request:
     | {

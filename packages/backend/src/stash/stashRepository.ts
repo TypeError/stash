@@ -1,6 +1,6 @@
 import type { Database, Parameter } from "sqlite";
 
-import type { NewSatchelBookmark, SatchelBookmarkRow } from "./satchelTypes";
+import type { NewStashBookmark, StashBookmarkRow } from "./stashTypes";
 
 function readString(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined;
@@ -18,7 +18,7 @@ function nullableParameter(value: string | undefined): Parameter {
   return value === undefined ? null : value;
 }
 
-function mapBookmarkRow(row: Record<string, unknown>): SatchelBookmarkRow {
+function mapBookmarkRow(row: Record<string, unknown>): StashBookmarkRow {
   return {
     id: readRequiredNumber(row.id),
     caidoRequestId: readRequiredString(row.caidoRequestId),
@@ -37,7 +37,7 @@ async function getTableColumns(db: Database, tableName: string): Promise<string[
   return rows.map((row) => readRequiredString(row.name));
 }
 
-async function createSatchelItemsTable(db: Database, tableName: string) {
+async function createStashItemsTable(db: Database, tableName: string) {
   await db.exec(`
     CREATE TABLE IF NOT EXISTS ${tableName} (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -52,8 +52,8 @@ async function createSatchelItemsTable(db: Database, tableName: string) {
   `);
 }
 
-export async function migrateSatchelStorage(db: Database) {
-  const columns = await getTableColumns(db, "satchel_items");
+export async function migrateStashStorage(db: Database) {
+  const columns = await getTableColumns(db, "stash_items");
   const expectedColumns = [
     "id",
     "caido_request_id",
@@ -66,10 +66,10 @@ export async function migrateSatchelStorage(db: Database) {
   ];
 
   if (columns.some((column) => !expectedColumns.includes(column))) {
-    await db.exec("DROP TABLE IF EXISTS satchel_items_lightweight");
-    await createSatchelItemsTable(db, "satchel_items_lightweight");
+    await db.exec("DROP TABLE IF EXISTS stash_items_lightweight");
+    await createStashItemsTable(db, "stash_items_lightweight");
     await db.exec(`
-      INSERT OR IGNORE INTO satchel_items_lightweight (
+      INSERT OR IGNORE INTO stash_items_lightweight (
         caido_request_id,
         method,
         url,
@@ -86,33 +86,33 @@ export async function migrateSatchelStorage(db: Database) {
         NULLIF(path, ''),
         created_at,
         updated_at
-      FROM satchel_items
+      FROM stash_items
       WHERE caido_request_id IS NOT NULL
         AND caido_request_id != ''
     `);
-    await db.exec("DROP TABLE satchel_items");
-    await db.exec("ALTER TABLE satchel_items_lightweight RENAME TO satchel_items");
+    await db.exec("DROP TABLE stash_items");
+    await db.exec("ALTER TABLE stash_items_lightweight RENAME TO stash_items");
   }
 
-  await createSatchelItemsTable(db, "satchel_items");
+  await createStashItemsTable(db, "stash_items");
 
   await db.exec(`
-    CREATE INDEX IF NOT EXISTS idx_satchel_items_caido_request_id
-    ON satchel_items(caido_request_id)
+    CREATE INDEX IF NOT EXISTS idx_stash_items_caido_request_id
+    ON stash_items(caido_request_id)
   `);
 
   await db.exec(`
-    CREATE INDEX IF NOT EXISTS idx_satchel_items_created_at
-    ON satchel_items(created_at)
+    CREATE INDEX IF NOT EXISTS idx_stash_items_created_at
+    ON stash_items(created_at)
   `);
 }
 
-export async function insertSatchelBookmark(
+export async function insertStashBookmark(
   db: Database,
-  bookmark: NewSatchelBookmark,
+  bookmark: NewStashBookmark,
 ): Promise<boolean> {
   const stmt = await db.prepare(`
-    INSERT OR IGNORE INTO satchel_items (
+    INSERT OR IGNORE INTO stash_items (
       caido_request_id,
       method,
       url,
@@ -137,11 +137,11 @@ export async function insertSatchelBookmark(
   return result.changes > 0;
 }
 
-export async function listSatchelBookmarkRows(
+export async function listStashBookmarkRows(
   db: Database,
   limit: number,
   offset: number,
-): Promise<SatchelBookmarkRow[]> {
+): Promise<StashBookmarkRow[]> {
   const stmt = await db.prepare(`
     SELECT
       id,
@@ -152,7 +152,7 @@ export async function listSatchelBookmarkRows(
       path,
       created_at AS createdAt,
       updated_at AS updatedAt
-    FROM satchel_items
+    FROM stash_items
     ORDER BY created_at DESC
     LIMIT ?
     OFFSET ?
@@ -162,10 +162,10 @@ export async function listSatchelBookmarkRows(
   return rows.map(mapBookmarkRow);
 }
 
-export async function getSatchelBookmarkRow(
+export async function getStashBookmarkRow(
   db: Database,
   itemId: number,
-): Promise<SatchelBookmarkRow | undefined> {
+): Promise<StashBookmarkRow | undefined> {
   const stmt = await db.prepare(`
     SELECT
       id,
@@ -176,7 +176,7 @@ export async function getSatchelBookmarkRow(
       path,
       created_at AS createdAt,
       updated_at AS updatedAt
-    FROM satchel_items
+    FROM stash_items
     WHERE id = ?
   `);
 
@@ -184,9 +184,9 @@ export async function getSatchelBookmarkRow(
   return row ? mapBookmarkRow(row) : undefined;
 }
 
-export async function deleteSatchelBookmarkRow(db: Database, itemId: number) {
+export async function deleteStashBookmarkRow(db: Database, itemId: number) {
   const stmt = await db.prepare(`
-    DELETE FROM satchel_items
+    DELETE FROM stash_items
     WHERE id = ?
   `);
 
@@ -194,8 +194,8 @@ export async function deleteSatchelBookmarkRow(db: Database, itemId: number) {
   return result.changes;
 }
 
-export async function clearSatchelBookmarkRows(db: Database) {
-  const stmt = await db.prepare("DELETE FROM satchel_items");
+export async function clearStashBookmarkRows(db: Database) {
+  const stmt = await db.prepare("DELETE FROM stash_items");
   const result = await stmt.run();
   return result.changes;
 }

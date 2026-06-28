@@ -7,11 +7,11 @@ import tailwindCaido from "@caido/tailwindcss";
 import path from "path";
 import prefixwrap from "postcss-prefixwrap";
 
-const id = "satchel";
+const id = "stash";
 
 export default defineConfig({
   id,
-  name: "Satchel",
+  name: "Stash",
   description: "Bookmark and organize Caido HTTP history items for later review.",
   version: "0.1.0",
   author: {

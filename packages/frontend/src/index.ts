@@ -8,8 +8,8 @@ import type { FrontendSDK } from "./types";
 import App from "./views/App.vue";
 
 const Commands = {
-  add: "satchel.add",
-  open: "satchel.open",
+  add: "stash.add",
+  open: "stash.open",
 } as const;
 
 type CommandContext =
@@ -70,20 +70,20 @@ function getRequestIdsFromContext(context: CommandContext): string[] {
   return [];
 }
 
-function registerSatchelCommand(sdk: FrontendSDK) {
+function registerStashCommand(sdk: FrontendSDK) {
   sdk.commands.register(Commands.open, {
-    name: "Open Satchel",
-    group: "Satchel",
+    name: "Open Stash",
+    group: "Stash",
     run: () => {
-      sdk.navigation.goTo("/satchel");
+      sdk.navigation.goTo("/stash");
     },
   });
 
   sdk.commandPalette.register(Commands.open);
 
   sdk.commands.register(Commands.add, {
-    name: "Add to Satchel",
-    group: "Satchel",
+    name: "Add to Stash",
+    group: "Stash",
     run: (context) => {
       void addRequestsFromContext(sdk, context);
     },
@@ -127,20 +127,20 @@ async function addRequestsFromContext(sdk: FrontendSDK, context: CommandContext)
         : "";
 
     sdk.window.showToast(
-      `Added ${addResult.added} request${addResult.added === 1 ? "" : "s"} to Satchel${skippedMessage}`,
+      `Added ${addResult.added} request${addResult.added === 1 ? "" : "s"} to Stash${skippedMessage}`,
       {
         variant: addResult.added > 0 ? "success" : "warning",
       },
     );
   } catch (err) {
-    sdk.window.showToast(err instanceof Error ? err.message : "Failed to add request to Satchel", {
+    sdk.window.showToast(err instanceof Error ? err.message : "Failed to add request to Stash", {
       variant: "error",
     });
   }
 }
 
 export const init = (sdk: FrontendSDK) => {
-  registerSatchelCommand(sdk);
+  registerStashCommand(sdk);
 
   const app = createApp(App);
 
@@ -160,11 +160,11 @@ export const init = (sdk: FrontendSDK) => {
 
   app.mount(root);
 
-  sdk.navigation.addPage("/satchel", {
+  sdk.navigation.addPage("/stash", {
     body: root,
   });
 
-  sdk.sidebar.registerItem("Satchel", "/satchel", {
+  sdk.sidebar.registerItem("Stash", "/stash", {
     icon: "fas fa-suitcase",
   });
 };

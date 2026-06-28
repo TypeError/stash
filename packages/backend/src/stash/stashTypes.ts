@@ -1,18 +1,18 @@
 import type { DefineAPI, DefineEvents } from "caido:plugin";
 
 import type {
-  addRequestsToSatchel,
-  clearSatchelItems,
-  deleteSatchelItem,
-  getSatchelItem,
-  listSatchelItems,
-} from "./satchelService";
+  addRequestsToStash,
+  clearStashItems,
+  deleteStashItem,
+  getStashItem,
+  listStashItems,
+} from "./stashService";
 
-export type SatchelUpdateReason = "add" | "delete" | "clear";
+export type StashUpdateReason = "add" | "delete" | "clear";
 
 export type Result<T> = { kind: "Error"; error: string } | { kind: "Ok"; value: T };
 
-export type SatchelItem = {
+export type StashItem = {
   id: number;
   caidoRequestId: string;
   method: string | undefined;
@@ -23,7 +23,7 @@ export type SatchelItem = {
   updatedAt: string;
 };
 
-export type SatchelDetail = SatchelItem & {
+export type StashDetail = StashItem & {
   available: boolean;
   request:
     | {
@@ -41,7 +41,7 @@ export type SatchelDetail = SatchelItem & {
     | undefined;
 };
 
-export type NewSatchelBookmark = {
+export type NewStashBookmark = {
   caidoRequestId: string;
   method: string | undefined;
   url: string | undefined;
@@ -51,11 +51,11 @@ export type NewSatchelBookmark = {
   updatedAt: string;
 };
 
-export type SatchelBookmarkRow = NewSatchelBookmark & {
+export type StashBookmarkRow = NewStashBookmark & {
   id: number;
 };
 
-export type SatchelRequestDetails = {
+export type StashRequestDetails = {
   method: string;
   url: string;
   host: string;
@@ -75,13 +75,13 @@ export type SatchelRequestDetails = {
 };
 
 export type Events = DefineEvents<{
-  "satchel-updated": (event: { reason: SatchelUpdateReason }) => void;
+  "stash-updated": (event: { reason: StashUpdateReason }) => void;
 }>;
 
 export type API = DefineAPI<{
-  addRequests: typeof addRequestsToSatchel;
-  listItems: typeof listSatchelItems;
-  getItem: typeof getSatchelItem;
-  deleteItem: typeof deleteSatchelItem;
-  clearItems: typeof clearSatchelItems;
+  addRequests: typeof addRequestsToStash;
+  listItems: typeof listStashItems;
+  getItem: typeof getStashItem;
+  deleteItem: typeof deleteStashItem;
+  clearItems: typeof clearStashItems;
 }>;

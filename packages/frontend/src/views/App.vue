@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { SatchelView } from "./satchel";
+import { StashView } from "./stash";
 </script>
 
 <template>
-  <SatchelView />
+  <StashView />
 </template>
