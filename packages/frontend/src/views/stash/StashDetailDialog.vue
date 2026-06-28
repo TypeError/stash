@@ -241,16 +241,6 @@ function getStatusSeverity(value: number | undefined): TagSeverity {
             class="mt-2 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-sm text-surface-400"
           >
             <span class="min-w-0 truncate" :title="displayHost">{{ displayHost }}</span>
-
-            <span v-if="responseStatus !== undefined" class="flex items-center gap-1.5">
-              <span class="text-surface-600" aria-hidden="true">•</span>
-              <Tag
-                :value="formatStatus(responseStatus)"
-                :severity="getStatusSeverity(responseStatus)"
-                rounded
-                class="font-mono text-[0.65rem] leading-none"
-              />
-            </span>
           </div>
         </div>
       </div>
