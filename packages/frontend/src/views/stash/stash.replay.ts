@@ -51,7 +51,7 @@ function findCreatedReplaySession(
 
 export async function openRequestInReplay(
   sdk: FrontendSDK,
-  caidoRequestId: string,
+  requestId: string,
 ): Promise<ReplaySession> {
   const collectionId = await getStashReplayCollectionId(sdk);
   const previousSessionIds = getReplaySessionIds(sdk);
@@ -59,7 +59,7 @@ export async function openRequestInReplay(
   await sdk.replay.createSession(
     {
       type: "ID",
-      id: caidoRequestId,
+      id: requestId,
     },
     collectionId,
   );

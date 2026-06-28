@@ -6,32 +6,30 @@ type HttpHistoryQuery = Parameters<FrontendSDK["httpHistory"]["setQuery"]>[0];
 
 const httpHistoryPath = "/http-history";
 
-export function isUsableRequestId(requestId: string | undefined): requestId is string {
-  return requestId !== undefined && requestId.length > 0;
+export function isHttpHistoryId(httpHistoryId: string | undefined): httpHistoryId is string {
+  return httpHistoryId !== undefined && /^\d+$/.test(httpHistoryId);
 }
 
-export function isHttpHistoryRowId(requestId: string | undefined): requestId is string {
-  return requestId !== undefined && /^\d+$/.test(requestId);
+export function getUniqueHttpHistoryIds(items: StashItem[]) {
+  const httpHistoryIds = items.map((item) => item.httpHistoryId).filter(isHttpHistoryId);
+
+  return Array.from(new Set(httpHistoryIds));
 }
 
-export function getUniqueHttpHistoryRowIds(items: StashItem[]) {
-  const rowIds = items.map((item) => item.caidoRequestId).filter(isHttpHistoryRowId);
-
-  return Array.from(new Set(rowIds));
+function createHttpHistoryRowsQuery(httpHistoryIds: string[]): HttpHistoryQuery {
+  return `(${httpHistoryIds
+    .map((httpHistoryId) => `row.id.eq:${httpHistoryId}`)
+    .join(" OR ")})` as HttpHistoryQuery;
 }
 
-export function createHttpHistoryRowsQuery(rowIds: string[]): HttpHistoryQuery {
-  return `(${rowIds.map((rowId) => `row.id.eq:${rowId}`).join(" OR ")})` as HttpHistoryQuery;
-}
+export function showHttpHistoryRows(sdk: FrontendSDK | undefined, httpHistoryIds: string[]) {
+  const validHttpHistoryIds = httpHistoryIds.filter(isHttpHistoryId);
 
-export function showHttpHistoryRows(sdk: FrontendSDK | undefined, rowIds: string[]) {
-  const httpHistoryRowIds = rowIds.filter(isHttpHistoryRowId);
-
-  if (sdk === undefined || httpHistoryRowIds.length === 0) {
+  if (sdk === undefined || validHttpHistoryIds.length === 0) {
     return;
   }
 
-  const query = createHttpHistoryRowsQuery(httpHistoryRowIds);
+  const query = createHttpHistoryRowsQuery(validHttpHistoryIds);
 
   if (sdk.httpHistory.getQuery() !== query) {
     sdk.httpHistory.setQuery(query);
@@ -40,10 +38,13 @@ export function showHttpHistoryRows(sdk: FrontendSDK | undefined, rowIds: string
   sdk.navigation.goTo(httpHistoryPath);
 }
 
-export function showHttpHistoryRow(sdk: FrontendSDK | undefined, requestId: string | undefined) {
-  if (sdk === undefined || !isHttpHistoryRowId(requestId)) {
+export function showHttpHistoryRow(
+  sdk: FrontendSDK | undefined,
+  httpHistoryId: string | undefined,
+) {
+  if (sdk === undefined || !isHttpHistoryId(httpHistoryId)) {
     return;
   }
 
-  showHttpHistoryRows(sdk, [requestId]);
+  showHttpHistoryRows(sdk, [httpHistoryId]);
 }

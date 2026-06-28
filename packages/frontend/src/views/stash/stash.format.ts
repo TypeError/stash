@@ -27,6 +27,21 @@ export function formatPath(path: string | undefined): string {
   return path !== undefined && path.length > 0 ? path : "/";
 }
 
+export function formatPathWithQuery(path: string | undefined, url: string | undefined): string {
+  const formattedPath = formatPath(path);
+
+  if (url === undefined || url.length === 0 || formattedPath.includes("?")) {
+    return formattedPath;
+  }
+
+  try {
+    const parsedUrl = new URL(url);
+    return parsedUrl.search.length > 0 ? `${formattedPath}${parsedUrl.search}` : formattedPath;
+  } catch {
+    return formattedPath;
+  }
+}
+
 export function formatHeaderValues(values: string[]): string {
   return values.join(", ");
 }

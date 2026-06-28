@@ -1,6 +1,7 @@
 export type StashItem = {
   id: number;
-  caidoRequestId: string;
+  requestId: string;
+  httpHistoryId: string | undefined;
   method: string | undefined;
   url: string | undefined;
   host: string | undefined;
