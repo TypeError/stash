@@ -28,7 +28,7 @@ export const init = (sdk: FrontendSDK) => {
     height: "100%",
     width: "100%",
   });
-  root.id = "plugin--frontend-vue";
+  root.id = "plugin--stash";
 
   app.mount(root);
 
