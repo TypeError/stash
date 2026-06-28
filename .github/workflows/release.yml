@@ -5,7 +5,7 @@ on:
 
 env:
   NODE_VERSION: 20
-  PNPM_VERSION: 9
+  PNPM_VERSION: 11.9.0
 
 jobs:
   release:
@@ -25,19 +25,22 @@ jobs:
       - name: Checkout project
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
-          run_install: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Build package
-        run: pnpm build
+        run: pnpm exec vp run build
 
       - name: Sign package
         working-directory: dist
