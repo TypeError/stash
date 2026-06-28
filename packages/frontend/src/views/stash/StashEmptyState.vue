@@ -14,7 +14,7 @@ import Card from "primevue/card";
         <i class="fas fa-box-open mb-3 text-xl text-surface-500" aria-hidden="true" />
         <h2 class="m-0 text-base font-semibold">No requests stashed yet</h2>
         <p class="mt-2 mb-0 text-sm text-surface-400">
-          Right-click a stashed request in HTTP History and choose Add to Stash.
+          Right-click a request in HTTP History and choose Stash request.
         </p>
       </section>
     </template>
