@@ -12,6 +12,7 @@ import {
   showHttpHistoryRow,
   showHttpHistoryRows,
 } from "./stash.httpHistory.js";
+import { openRequestInReplay } from "./stash.replay.js";
 import type { StashItem } from "./stash.types.js";
 
 const sdk = useSDK();
@@ -144,6 +145,21 @@ async function handleClear() {
   }
 }
 
+async function handleReplay(item: StashItem) {
+  if (sdk === undefined) {
+    error.value = "Caido SDK is not available";
+    return;
+  }
+
+  try {
+    await openRequestInReplay(sdk, item.caidoRequestId);
+  } catch (err) {
+    sdk.window.showToast(err instanceof Error ? err.message : "Failed to open request in Replay", {
+      variant: "error",
+    });
+  }
+}
+
 const eventSubscription = sdk?.backend.onEvent("stash-updated", () => {
   void loadItems();
 });
@@ -177,6 +193,7 @@ onUnmounted(() => {
           :loading="loading"
           @view="handleOpenInHttpHistory"
           @show-stashed="handleShowStashedInHttpHistory"
+          @replay="handleReplay"
           @unstash="handleUnstash"
         />
       </div>

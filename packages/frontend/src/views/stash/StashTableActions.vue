@@ -11,6 +11,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   view: [item: StashItem];
+  replay: [item: StashItem];
   unstash: [item: StashItem];
 }>();
 
@@ -38,6 +39,18 @@ const historyIdLabel = computed(() => {
       :aria-label="`View HTTP History row ${historyIdLabel}`"
       v-tooltip.top="'View in HTTP History'"
       @click.stop="emit('view', item)"
+    />
+
+    <Button
+      type="button"
+      icon="fas fa-refresh"
+      size="small"
+      severity="primary"
+      text
+      rounded
+      :aria-label="`Send to Replay ${historyIdLabel}`"
+      v-tooltip.top="'Send to Replay'"
+      @click.stop="emit('replay', item)"
     />
 
     <Button

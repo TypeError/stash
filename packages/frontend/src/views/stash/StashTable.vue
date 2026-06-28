@@ -17,6 +17,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   view: [item: StashItem];
+  replay: [item: StashItem];
   showStashed: [];
   unstash: [item: StashItem];
 }>();
@@ -168,6 +169,7 @@ function getMethodSeverity(value: string | undefined): TagSeverity {
             <StashTableActions
               :item="data"
               @view="emit('view', $event)"
+              @replay="emit('replay', $event)"
               @unstash="emit('unstash', $event)"
             />
           </template>

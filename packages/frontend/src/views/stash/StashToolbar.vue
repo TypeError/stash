@@ -37,7 +37,7 @@ defineEmits<{
       <Button
         type="button"
         label="Refresh"
-        icon="fas fa-refresh"
+        icon="fas fa-list"
         size="small"
         severity="secondary"
         outlined
