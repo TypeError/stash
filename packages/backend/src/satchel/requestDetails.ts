@@ -2,13 +2,13 @@ import type { SDK } from "caido:plugin";
 
 import type { SatchelRequestDetails } from "./satchelTypes";
 
-function readBodyText(body: { toText(): string } | undefined): string | null {
+function readBodyText(body: { toText(): string } | undefined): string | undefined {
   if (body === undefined) {
-    return null;
+    return undefined;
   }
 
   const text = body.toText();
-  return text.length > 0 ? text : null;
+  return text.length > 0 ? text : undefined;
 }
 
 export async function loadRequestDetails(
@@ -33,7 +33,7 @@ export async function loadRequestDetails(
     },
     response:
       pair.response === undefined
-        ? null
+        ? undefined
         : {
             statusCode: pair.response.getCode(),
             headers: pair.response.getHeaders(),

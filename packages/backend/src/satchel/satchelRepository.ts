@@ -2,8 +2,8 @@ import type { Database, Parameter } from "sqlite";
 
 import type { NewSatchelBookmark, SatchelBookmarkRow } from "./satchelTypes";
 
-function readString(value: unknown): string | null {
-  return typeof value === "string" && value.length > 0 ? value : null;
+function readString(value: unknown): string | undefined {
+  return typeof value === "string" && value.length > 0 ? value : undefined;
 }
 
 function readRequiredString(value: unknown): string {
@@ -14,8 +14,8 @@ function readRequiredNumber(value: unknown): number {
   return typeof value === "number" ? value : 0;
 }
 
-function nullableParameter(value: string | null): Parameter {
-  return value === null ? null : value;
+function nullableParameter(value: string | undefined): Parameter {
+  return value === undefined ? null : value;
 }
 
 function mapBookmarkRow(row: Record<string, unknown>): SatchelBookmarkRow {

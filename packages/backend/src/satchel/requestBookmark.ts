@@ -2,8 +2,8 @@ import type { Request } from "caido:utils";
 
 import type { NewSatchelBookmark } from "./satchelTypes";
 
-function readString(value: string): string | null {
-  return value.length > 0 ? value : null;
+function readString(value: string): string | undefined {
+  return value.length > 0 ? value : undefined;
 }
 
 export function createBookmarkFromCaidoRequest(

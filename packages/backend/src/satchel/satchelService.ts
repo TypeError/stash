@@ -16,8 +16,8 @@ function buildUnavailableDetail(row: SatchelBookmarkRow): SatchelDetail {
   return {
     ...buildItem(row),
     available: false,
-    request: null,
-    response: null,
+    request: undefined,
+    response: undefined,
   };
 }
 
@@ -74,12 +74,12 @@ export async function listSatchelItems(sdk: SDK, limit = 100, offset = 0) {
   return rows.map(buildItem);
 }
 
-export async function getSatchelItem(sdk: SDK, itemId: number): Promise<SatchelDetail | null> {
+export async function getSatchelItem(sdk: SDK, itemId: number): Promise<SatchelDetail | undefined> {
   const db = await sdk.meta.db();
   const row = await getSatchelBookmarkRow(db, itemId);
 
   if (row === undefined) {
-    return null;
+    return undefined;
   }
 
   const details = await loadRequestDetails(sdk, row.caidoRequestId);

@@ -13,34 +13,38 @@ export type SatchelUpdateReason = "add" | "delete" | "clear";
 export type SatchelItem = {
   id: number;
   caidoRequestId: string;
-  method: string | null;
-  url: string | null;
-  host: string | null;
-  path: string | null;
+  method: string | undefined;
+  url: string | undefined;
+  host: string | undefined;
+  path: string | undefined;
   createdAt: string;
   updatedAt: string;
 };
 
 export type SatchelDetail = SatchelItem & {
   available: boolean;
-  request: {
-    headers: Record<string, string[]>;
-    bodyText: string | null;
-    rawRequest: string | null;
-  } | null;
-  response: {
-    statusCode: number | null;
-    headers: Record<string, string[]>;
-    bodyText: string | null;
-  } | null;
+  request:
+    | {
+        headers: Record<string, string[]>;
+        bodyText: string | undefined;
+        rawRequest: string | undefined;
+      }
+    | undefined;
+  response:
+    | {
+        statusCode: number | undefined;
+        headers: Record<string, string[]>;
+        bodyText: string | undefined;
+      }
+    | undefined;
 };
 
 export type NewSatchelBookmark = {
   caidoRequestId: string;
-  method: string | null;
-  url: string | null;
-  host: string | null;
-  path: string | null;
+  method: string | undefined;
+  url: string | undefined;
+  host: string | undefined;
+  path: string | undefined;
   createdAt: string;
   updatedAt: string;
 };
@@ -56,14 +60,16 @@ export type SatchelRequestDetails = {
   path: string;
   request: {
     headers: Record<string, string[]>;
-    bodyText: string | null;
-    rawRequest: string | null;
+    bodyText: string | undefined;
+    rawRequest: string | undefined;
   };
-  response: {
-    statusCode: number | null;
-    headers: Record<string, string[]>;
-    bodyText: string | null;
-  } | null;
+  response:
+    | {
+        statusCode: number | undefined;
+        headers: Record<string, string[]>;
+        bodyText: string | undefined;
+      }
+    | undefined;
 };
 
 export type Events = DefineEvents<{
