@@ -12,7 +12,7 @@ export default defineConfig({
   id,
   name: "Stash",
   description: "Stash interesting HTTP History requests for later review.",
-  version: "0.1.0",
+  version: "0.1.1",
   author: {
     name: "Caleb Kinney",
     email: "caleb@typeerror.com",
