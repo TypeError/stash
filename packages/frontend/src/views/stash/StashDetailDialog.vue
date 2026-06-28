@@ -11,7 +11,8 @@ import Tabs from "primevue/tabs";
 import Tag from "primevue/tag";
 import { computed, ref, watch } from "vue";
 
-import StashHttpTextBlock from "./StashHttpTextBlock.vue";
+import { useSDK } from "@/plugins/sdk";
+import StashHttpEditor from "./StashHttpEditor.vue";
 import { formatHeaderValues, formatPathWithQuery, formatStashedAt } from "./stash.format";
 import type { StashDetail } from "./stash.types";
 
@@ -30,6 +31,7 @@ type HeaderValues = Parameters<typeof formatHeaderValues>[0];
 type HeaderMap = Record<string, HeaderValues>;
 type TagSeverity = "secondary" | "success" | "info" | "warn" | "danger";
 
+const sdk = useSDK();
 const activeTab = ref("overview");
 
 const displayMethod = computed(() => {
@@ -60,12 +62,39 @@ const responseHeaders = computed<HeaderMap>(() => {
   return props.detail?.response?.headers ?? {};
 });
 
-const requestHeadersText = computed(() => {
-  return formatHeaders(requestHeaders.value);
+const rawRequestText = computed(() => {
+  if (props.detail?.request === undefined) {
+    return undefined;
+  }
+
+  if (props.detail.request.rawRequest !== undefined && props.detail.request.rawRequest.length > 0) {
+    return props.detail.request.rawRequest;
+  }
+
+  return composeHttpMessage(
+    `${displayMethod.value} ${displayPath.value} HTTP/1.1`,
+    formatHeaders(requestHeaders.value),
+    props.detail.request.bodyText,
+  );
 });
 
-const responseHeadersText = computed(() => {
-  return formatHeaders(responseHeaders.value);
+const rawResponseText = computed(() => {
+  if (props.detail?.response === undefined) {
+    return undefined;
+  }
+
+  if (
+    props.detail.response.rawResponse !== undefined &&
+    props.detail.response.rawResponse.length > 0
+  ) {
+    return props.detail.response.rawResponse;
+  }
+
+  return composeHttpMessage(
+    `HTTP/1.1 ${formatStatus(props.detail.response.statusCode)}`,
+    formatHeaders(responseHeaders.value),
+    props.detail.response.bodyText,
+  );
 });
 
 const responseStatus = computed(() => {
@@ -100,6 +129,23 @@ function formatHeaders(headers: HeaderMap) {
   }
 
   return entries.map(([name, values]) => `${name}: ${formatHeaderValues(values)}`).join("\n");
+}
+
+function composeHttpMessage(
+  startLine: string,
+  headersText: string | undefined,
+  bodyText: string | undefined,
+) {
+  const head =
+    headersText !== undefined && headersText.length > 0
+      ? `${startLine}\n${headersText}`
+      : startLine;
+
+  if (bodyText !== undefined && bodyText.length > 0) {
+    return `${head}\r\n\r\n${bodyText}`;
+  }
+
+  return head;
 }
 
 function formatStatus(value: number | undefined) {
@@ -331,25 +377,13 @@ function getStatusSeverity(value: number | undefined): TagSeverity {
               Request details unavailable. The original HTTP History request could not be loaded.
             </Message>
 
-            <div v-else class="grid gap-4">
-              <StashHttpTextBlock
-                label="Raw"
-                :value="detail.request?.rawRequest"
-                maxHeightClass="max-h-96"
-              />
-
-              <StashHttpTextBlock
-                label="Headers"
-                :value="requestHeadersText"
-                maxHeightClass="max-h-64"
-              />
-
-              <StashHttpTextBlock
-                label="Body"
-                :value="detail.request?.bodyText"
-                maxHeightClass="max-h-80"
-              />
-            </div>
+            <StashHttpEditor
+              v-else
+              :sdk="sdk"
+              kind="request"
+              :value="rawRequestText"
+              height-class="h-[32rem]"
+            />
           </TabPanel>
 
           <TabPanel value="response">
@@ -361,31 +395,13 @@ function getStatusSeverity(value: number | undefined): TagSeverity {
               No response is available.
             </Message>
 
-            <div v-else class="grid gap-4">
-              <div class="rounded-md border border-surface-700 bg-surface-800 p-3">
-                <div class="mb-2 text-xs font-medium uppercase tracking-wide text-surface-500">
-                  Status
-                </div>
-                <Tag
-                  :value="formatStatus(detail.response.statusCode)"
-                  :severity="getStatusSeverity(detail.response.statusCode)"
-                  rounded
-                  class="font-mono text-[0.7rem] leading-none"
-                />
-              </div>
-
-              <StashHttpTextBlock
-                label="Headers"
-                :value="responseHeadersText"
-                maxHeightClass="max-h-64"
-              />
-
-              <StashHttpTextBlock
-                label="Body"
-                :value="detail.response.bodyText"
-                maxHeightClass="max-h-[28rem]"
-              />
-            </div>
+            <StashHttpEditor
+              v-else
+              :sdk="sdk"
+              kind="response"
+              :value="rawResponseText"
+              height-class="h-[32rem]"
+            />
           </TabPanel>
         </TabPanels>
       </Tabs>

@@ -33,7 +33,7 @@ function formatText(value: string | undefined) {
 }
 
 function formatMethod(value: string | undefined) {
-  return hasText(value) ? value.toUpperCase() : "-";
+  return hasText(value) ? (value as string).toUpperCase() : "-";
 }
 
 function getMethodSeverity(value: string | undefined): TagSeverity {
