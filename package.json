@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "typecheck": "pnpm -r typecheck",
-    "lint": "vp lint ./packages/**/src --fix",
-    "fmt": "vp format ./packages/**/src --write",
+    "lint": "vp lint packages/backend/src packages/frontend/src --fix",
+    "fmt": "vp format packages/backend/src packages/frontend/src --write",
     "knip": "knip",
     "build": "caido-dev build",
     "watch": "caido-dev watch",
