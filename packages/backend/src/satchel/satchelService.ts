@@ -10,7 +10,25 @@ import {
   insertSatchelBookmark,
   listSatchelBookmarkRows,
 } from "./satchelRepository";
-import type { Events, SatchelBookmarkRow, SatchelDetail, SatchelItem } from "./satchelTypes";
+import type {
+  Events,
+  Result,
+  SatchelBookmarkRow,
+  SatchelDetail,
+  SatchelItem,
+} from "./satchelTypes";
+
+function errorResult<T>(error: string): Result<T> {
+  return { kind: "Error", error };
+}
+
+function okResult<T>(value: T): Result<T> {
+  return { kind: "Ok", value };
+}
+
+function messageFromError(err: unknown, fallback: string) {
+  return err instanceof Error && err.message.length > 0 ? err.message : fallback;
+}
 
 function buildUnavailableDetail(row: SatchelBookmarkRow): SatchelDetail {
   return {
@@ -37,97 +55,124 @@ function buildItem(row: SatchelBookmarkRow): SatchelItem {
 export async function addRequestsToSatchel(
   sdk: SDK<unknown, Events>,
   requestIds: string[],
-): Promise<{ added: number; skipped: number }> {
-  const db = await sdk.meta.db();
+): Promise<Result<{ added: number; skipped: number }>> {
+  try {
+    const db = await sdk.meta.db();
 
-  let added = 0;
-  let skipped = 0;
+    let added = 0;
+    let skipped = 0;
 
-  for (const requestId of requestIds) {
-    const pair = await sdk.requests.get(requestId);
+    for (const requestId of requestIds) {
+      const pair = await sdk.requests.get(requestId);
 
-    if (pair === undefined) {
-      skipped += 1;
-      continue;
+      if (pair === undefined) {
+        skipped += 1;
+        continue;
+      }
+
+      const bookmark = createBookmarkFromCaidoRequest(pair.request, requestId);
+      const inserted = await insertSatchelBookmark(db, bookmark);
+
+      if (inserted) {
+        added += 1;
+      } else {
+        skipped += 1;
+      }
     }
 
-    const bookmark = createBookmarkFromCaidoRequest(pair.request, requestId);
-    const inserted = await insertSatchelBookmark(db, bookmark);
-
-    if (inserted) {
-      added += 1;
-    } else {
-      skipped += 1;
+    if (added > 0) {
+      emitSatchelUpdated(sdk, "add");
     }
-  }
 
-  if (added > 0) {
-    emitSatchelUpdated(sdk, "add");
+    return okResult({ added, skipped });
+  } catch (err) {
+    return errorResult(messageFromError(err, "Could not save bookmark."));
   }
-
-  return { added, skipped };
 }
 
-export async function listSatchelItems(sdk: SDK, limit = 100, offset = 0) {
-  const db = await sdk.meta.db();
-  const rows = await listSatchelBookmarkRows(db, limit, offset);
-  return rows.map(buildItem);
+export async function listSatchelItems(
+  sdk: SDK,
+  limit = 100,
+  offset = 0,
+): Promise<Result<SatchelItem[]>> {
+  try {
+    const db = await sdk.meta.db();
+    const rows = await listSatchelBookmarkRows(db, limit, offset);
+    return okResult(rows.map(buildItem));
+  } catch (err) {
+    return errorResult(messageFromError(err, "Could not load bookmarks."));
+  }
 }
 
-export async function getSatchelItem(sdk: SDK, itemId: number): Promise<SatchelDetail | undefined> {
-  const db = await sdk.meta.db();
-  const row = await getSatchelBookmarkRow(db, itemId);
+export async function getSatchelItem(
+  sdk: SDK,
+  itemId: number,
+): Promise<Result<SatchelDetail | undefined>> {
+  try {
+    const db = await sdk.meta.db();
+    const row = await getSatchelBookmarkRow(db, itemId);
 
-  if (row === undefined) {
-    return undefined;
+    if (row === undefined) {
+      return okResult(undefined);
+    }
+
+    const details = await loadRequestDetails(sdk, row.caidoRequestId);
+
+    if (details === undefined) {
+      return okResult(buildUnavailableDetail(row));
+    }
+
+    return okResult({
+      id: row.id,
+      caidoRequestId: row.caidoRequestId,
+      method: details.method,
+      url: details.url,
+      host: details.host,
+      path: details.path,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      available: true,
+      request: details.request,
+      response: details.response,
+    } satisfies SatchelDetail);
+  } catch (err) {
+    return errorResult(messageFromError(err, "Could not load HTTP history item."));
   }
-
-  const details = await loadRequestDetails(sdk, row.caidoRequestId);
-
-  if (details === undefined) {
-    return buildUnavailableDetail(row);
-  }
-
-  return {
-    id: row.id,
-    caidoRequestId: row.caidoRequestId,
-    method: details.method,
-    url: details.url,
-    host: details.host,
-    path: details.path,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-    available: true,
-    request: details.request,
-    response: details.response,
-  } satisfies SatchelDetail;
 }
 
 export async function deleteSatchelItem(
   sdk: SDK<unknown, Events>,
   itemId: number,
-): Promise<{ deleted: boolean }> {
-  const db = await sdk.meta.db();
-  const deletedRows = await deleteSatchelBookmarkRow(db, itemId);
+): Promise<Result<{ deleted: boolean }>> {
+  try {
+    const db = await sdk.meta.db();
+    const deletedRows = await deleteSatchelBookmarkRow(db, itemId);
 
-  if (deletedRows === 0) {
-    return { deleted: false };
+    if (deletedRows === 0) {
+      return okResult({ deleted: false });
+    }
+
+    emitSatchelUpdated(sdk, "delete");
+
+    return okResult({ deleted: true });
+  } catch (err) {
+    return errorResult(messageFromError(err, "Could not remove bookmark."));
   }
-
-  emitSatchelUpdated(sdk, "delete");
-
-  return { deleted: true };
 }
 
 export async function clearSatchelItems(
   sdk: SDK<unknown, Events>,
-): Promise<{ deletedItems: number }> {
-  const db = await sdk.meta.db();
-  const deletedItems = await clearSatchelBookmarkRows(db);
+): Promise<Result<{ deletedItems: number }>> {
+  try {
+    const db = await sdk.meta.db();
+    const deletedItems = await clearSatchelBookmarkRows(db);
 
-  if (deletedItems > 0) {
-    emitSatchelUpdated(sdk, "clear");
+    if (deletedItems > 0) {
+      emitSatchelUpdated(sdk, "clear");
+    }
+
+    return okResult({ deletedItems });
+  } catch (err) {
+    return errorResult(messageFromError(err, "Could not clear bookmarks."));
   }
-
-  return { deletedItems };
 }

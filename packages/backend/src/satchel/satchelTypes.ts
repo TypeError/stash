@@ -10,6 +10,8 @@ import type {
 
 export type SatchelUpdateReason = "add" | "delete" | "clear";
 
+export type Result<T> = { kind: "Error"; error: string } | { kind: "Ok"; value: T };
+
 export type SatchelItem = {
   id: number;
   caidoRequestId: string;
