@@ -1,6 +1,6 @@
-import type { RawConfigurationOrFn } from "knip/dist/types/config.js";
+import type { KnipConfig } from "knip";
 
-const config: RawConfigurationOrFn = {
+const config: KnipConfig = {
   ignoreIssues: {
     "pnpm-workspace.yaml": ["catalog"],
   },
@@ -9,7 +9,6 @@ const config: RawConfigurationOrFn = {
       entry: ["caido.config.ts", "vite.config.ts"],
     },
     "packages/backend": {
-      entry: ["src/index.ts"],
       project: ["src/**/*.ts"],
       ignoreDependencies: ["caido", "sqlite"],
     },
