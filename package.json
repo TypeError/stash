@@ -1,7 +1,14 @@
 {
-  "name": "frontend-vue",
-  "version": "0.0.0",
+  "name": "stash",
+  "version": "0.1.0",
   "private": true,
+  "description": "A Caido plugin for stashing interesting HTTP History requests for later review.",
+  "license": "MIT",
+  "author": {
+    "name": "Caleb Kinney",
+    "email": "caleb@typeerror.com",
+    "url": "https://typeerror.com"
+  },
   "scripts": {
     "typecheck": "pnpm -r typecheck",
     "lint": "vp lint packages/backend/src packages/frontend/src --fix",
@@ -15,7 +22,6 @@
     "@caido-community/dev": "^0.1.7",
     "@caido/tailwindcss": "^0.1.0",
     "@vitejs/plugin-vue": "^6.0.7",
-    "autoprefixer": "^10.5.2",
     "knip": "^6.22.0",
     "postcss": "^8.5.15",
     "postcss-prefixwrap": "^1.58.0",
