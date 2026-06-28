@@ -9,6 +9,7 @@ import App from "./views/App.vue";
 
 const Commands = {
   add: "satchel.add",
+  open: "satchel.open",
 } as const;
 
 type CommandContext =
@@ -17,11 +18,21 @@ type CommandContext =
       type: "RequestRowContext";
       requests: {
         id: string;
+        host: string;
+        port: number;
+        path: string;
+        query: string;
+        isTls: boolean;
       }[];
     }
   | {
       type: "RequestContext";
       request: {
+        host: string;
+        port: number;
+        path: string;
+        query: string;
+        isTls: boolean;
         raw: string;
       };
       selection: string;
@@ -30,9 +41,17 @@ type CommandContext =
       type: "ResponseContext";
       request: {
         id: string;
+        host: string;
+        port: number;
+        path: string;
+        query: string;
+        isTls: boolean;
       };
       response: {
         id: string;
+        raw: string;
+        statusCode: number;
+        roundtripTime: number;
       };
       selection: string;
     };
@@ -52,22 +71,27 @@ function getRequestIdsFromContext(context: CommandContext): string[] {
 }
 
 function registerSatchelCommand(sdk: FrontendSDK) {
+  sdk.commands.register(Commands.open, {
+    name: "Open Satchel",
+    group: "Satchel",
+    run: () => {
+      sdk.navigation.goTo("/satchel");
+    },
+  });
+
+  sdk.commandPalette.register(Commands.open);
+
   sdk.commands.register(Commands.add, {
     name: "Add to Satchel",
     group: "Satchel",
     run: (context) => {
       void addRequestsFromContext(sdk, context);
     },
+    when: (context) => getRequestIdsFromContext(context).length > 0,
   });
 
   sdk.menu.registerItem({
     type: "RequestRow",
-    commandId: Commands.add,
-    leadingIcon: "fas fa-suitcase",
-  });
-
-  sdk.menu.registerItem({
-    type: "Request",
     commandId: Commands.add,
     leadingIcon: "fas fa-suitcase",
   });
@@ -91,15 +115,21 @@ async function addRequestsFromContext(sdk: FrontendSDK, context: CommandContext)
 
   try {
     const result = await sdk.backend.addRequests(requestIds);
+    if (result.kind === "Error") {
+      sdk.window.showToast(result.error, { variant: "error" });
+      return;
+    }
+
+    const addResult = result.value;
     const skippedMessage =
-      result.skipped > 0
-        ? ` (${result.skipped} duplicate or unavailable request${result.skipped === 1 ? "" : "s"} skipped)`
+      addResult.skipped > 0
+        ? ` (${addResult.skipped} duplicate or unavailable request${addResult.skipped === 1 ? "" : "s"} skipped)`
         : "";
 
     sdk.window.showToast(
-      `Added ${result.added} request${result.added === 1 ? "" : "s"} to Satchel${skippedMessage}`,
+      `Added ${addResult.added} request${addResult.added === 1 ? "" : "s"} to Satchel${skippedMessage}`,
       {
-        variant: result.added > 0 ? "success" : "warning",
+        variant: addResult.added > 0 ? "success" : "warning",
       },
     );
   } catch (err) {
