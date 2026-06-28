@@ -9,6 +9,11 @@ const Commands = {
   stashRequest: "stash.request",
 } as const;
 
+const StashSelectedRequestsUnavailableMessage =
+  "Select one or more HTTP History requests, then use the context menu to stash them.";
+const StashRequestUnavailableMessage =
+  "Open a request or use the HTTP History context menu to stash it.";
+
 function getSelectedHttpHistoryIds(sdk: FrontendSDK): string[] {
   const context = sdk.window.getContext();
 
@@ -48,6 +53,25 @@ function dedupeStashRequestInputs(inputs: StashRequestInput[]): StashRequestInpu
   });
 }
 
+function getStashResultMessage(stashed: number, skipped: number): string {
+  const stashedMessage =
+    stashed > 0 ? `Stashed ${stashed} request${stashed === 1 ? "" : "s"}.` : "";
+
+  if (skipped === 0) {
+    return stashedMessage;
+  }
+
+  if (stashed === 0) {
+    return skipped === 1
+      ? "Request already stashed or unavailable."
+      : `${skipped} requests already stashed or unavailable.`;
+  }
+
+  return `${stashedMessage} ${skipped} already stashed or unavailable request${
+    skipped === 1 ? "" : "s"
+  } skipped.`;
+}
+
 function getStashRequestInputsFromContext(
   sdk: FrontendSDK,
   context: CommandContext,
@@ -81,16 +105,13 @@ function getStashRequestInputsFromContext(
   return [];
 }
 
-async function stashRequestsFromContext(sdk: FrontendSDK, context: CommandContext) {
-  const inputs = getStashRequestInputsFromContext(sdk, context);
+function showStashResult(sdk: FrontendSDK, stashResult: { stashed: number; skipped: number }) {
+  sdk.window.showToast(getStashResultMessage(stashResult.stashed, stashResult.skipped), {
+    variant: stashResult.stashed > 0 ? "success" : "warning",
+  });
+}
 
-  if (inputs.length === 0) {
-    sdk.window.showToast("No request selected to stash.", {
-      variant: "warning",
-    });
-    return;
-  }
-
+async function stashRequestInputs(sdk: FrontendSDK, inputs: StashRequestInput[]) {
   try {
     const result = await sdk.backend.stashRequests(inputs);
 
@@ -99,27 +120,116 @@ async function stashRequestsFromContext(sdk: FrontendSDK, context: CommandContex
       return;
     }
 
-    const stashResult = result.value;
-    const skippedMessage =
-      stashResult.skipped > 0
-        ? ` ${stashResult.skipped} already stashed or unavailable request${
-            stashResult.skipped === 1 ? "" : "s"
-          } skipped.`
-        : "";
-
-    sdk.window.showToast(
-      `Stashed ${stashResult.stashed} request${
-        stashResult.stashed === 1 ? "" : "s"
-      }.${skippedMessage}`,
-      {
-        variant: stashResult.stashed > 0 ? "success" : "warning",
-      },
-    );
+    showStashResult(sdk, result.value);
   } catch (err) {
     sdk.window.showToast(err instanceof Error ? err.message : "Could not stash request.", {
       variant: "error",
     });
   }
+}
+
+async function stashRequestsFromContext(
+  sdk: FrontendSDK,
+  context: CommandContext,
+  unavailableMessage: string,
+) {
+  const inputs = getStashRequestInputsFromContext(sdk, context);
+
+  if (inputs.length === 0) {
+    sdk.window.showToast(unavailableMessage, {
+      variant: "warning",
+    });
+    return;
+  }
+
+  await stashRequestInputs(sdk, inputs);
+}
+
+async function stashSelectedHttpHistoryRequests(sdk: FrontendSDK) {
+  const httpHistoryIds = getSelectedHttpHistoryIds(sdk);
+
+  if (httpHistoryIds.length === 0) {
+    sdk.window.showToast(StashSelectedRequestsUnavailableMessage, {
+      variant: "warning",
+    });
+    return;
+  }
+
+  try {
+    const result = await sdk.backend.stashHttpHistoryRequests(httpHistoryIds);
+
+    if (result.kind === "Error") {
+      sdk.window.showToast(result.error, { variant: "error" });
+      return;
+    }
+
+    showStashResult(sdk, result.value);
+  } catch (err) {
+    sdk.window.showToast(
+      err instanceof Error ? err.message : "Could not stash selected requests.",
+      {
+        variant: "error",
+      },
+    );
+  }
+}
+
+async function stashPrimaryHttpHistoryRequest(sdk: FrontendSDK) {
+  const httpHistoryId = getPrimaryHttpHistoryId(sdk);
+
+  if (httpHistoryId === undefined) {
+    sdk.window.showToast(StashRequestUnavailableMessage, {
+      variant: "warning",
+    });
+    return;
+  }
+
+  try {
+    const result = await sdk.backend.stashHttpHistoryRequests([httpHistoryId]);
+
+    if (result.kind === "Error") {
+      sdk.window.showToast(result.error, { variant: "error" });
+      return;
+    }
+
+    showStashResult(sdk, result.value);
+  } catch (err) {
+    sdk.window.showToast(err instanceof Error ? err.message : "Could not stash request.", {
+      variant: "error",
+    });
+  }
+}
+
+async function stashSelectedRequestsFromCommand(sdk: FrontendSDK, context: CommandContext) {
+  if (context.type === "BaseContext") {
+    await stashSelectedHttpHistoryRequests(sdk);
+    return;
+  }
+
+  if (context.type !== "RequestRowContext") {
+    sdk.window.showToast(StashSelectedRequestsUnavailableMessage, {
+      variant: "warning",
+    });
+    return;
+  }
+
+  await stashRequestsFromContext(sdk, context, StashSelectedRequestsUnavailableMessage);
+}
+
+async function stashRequestFromCommand(sdk: FrontendSDK, context: CommandContext) {
+  if (context.type === "BaseContext") {
+    await stashPrimaryHttpHistoryRequest(sdk);
+    return;
+  }
+
+  if (context.type !== "RequestContext" && context.type !== "ResponseContext") {
+    sdk.window.showToast(StashRequestUnavailableMessage, {
+      variant: "warning",
+    });
+    return;
+  }
+
+  await stashRequestsFromContext(sdk, context, StashRequestUnavailableMessage);
 }
 
 export function registerStashCommands(sdk: FrontendSDK) {
@@ -138,11 +248,9 @@ export function registerStashCommands(sdk: FrontendSDK) {
     name: "Stash selected requests",
     group: "Stash",
     run: (context) => {
-      void stashRequestsFromContext(sdk, context);
+      void stashSelectedRequestsFromCommand(sdk, context);
     },
-    when: (context) =>
-      context.type === "RequestRowContext" &&
-      getStashRequestInputsFromContext(sdk, context).length > 0,
+    when: (context) => context.type === "BaseContext" || context.type === "RequestRowContext",
   });
 
   sdk.commandPalette.register(Commands.stashSelectedRequests);
@@ -151,11 +259,12 @@ export function registerStashCommands(sdk: FrontendSDK) {
     name: "Stash request",
     group: "Stash",
     run: (context) => {
-      void stashRequestsFromContext(sdk, context);
+      void stashRequestFromCommand(sdk, context);
     },
     when: (context) =>
-      (context.type === "RequestContext" || context.type === "ResponseContext") &&
-      getStashRequestInputsFromContext(sdk, context).length > 0,
+      context.type === "BaseContext" ||
+      ((context.type === "RequestContext" || context.type === "ResponseContext") &&
+        getStashRequestInputsFromContext(sdk, context).length > 0),
   });
 
   sdk.commandPalette.register(Commands.stashRequest);

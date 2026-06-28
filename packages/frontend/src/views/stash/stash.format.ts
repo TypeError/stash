@@ -23,7 +23,7 @@ export function formatStashedAt(value: string): string {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
-export function formatPath(path: string | undefined): string {
+function formatPath(path: string | undefined): string {
   return path !== undefined && path.length > 0 ? path : "/";
 }
 

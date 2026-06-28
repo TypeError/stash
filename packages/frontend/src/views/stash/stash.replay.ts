@@ -30,7 +30,7 @@ async function getStashReplayCollectionId(sdk: FrontendSDK): Promise<string> {
   const createdCollection = findStashReplayCollection(sdk);
 
   if (createdCollection === undefined) {
-    throw new Error("Failed to create Stash Replay collection");
+    throw new Error("Could not create Stash Replay collection.");
   }
 
   stashReplayCollectionId = createdCollection.id;
@@ -67,7 +67,7 @@ export async function openRequestInReplay(
   const session = findCreatedReplaySession(sdk, previousSessionIds);
 
   if (session === undefined) {
-    throw new Error("Failed to find created Replay session");
+    throw new Error("Could not find the created Replay session.");
   }
 
   sdk.replay.openTab(session.id, { select: true });
