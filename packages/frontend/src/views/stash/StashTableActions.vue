@@ -40,29 +40,29 @@ const requestIdLabel = computed(() => {
       severity="secondary"
       text
       rounded
-      :aria-label="`Open request details ${requestIdLabel}`"
-      :title="`Open request details ${requestIdLabel}`"
-      v-tooltip.top="'Open details'"
+      :aria-label="`View request details ${requestIdLabel}`"
+      :title="`View request details ${requestIdLabel}`"
+      v-tooltip.top="'View details'"
       @click.stop="emit('details', item)"
     />
 
     <Button
       type="button"
-      icon="fas fa-external-link-alt"
+      icon="fas fa-list"
       size="small"
       severity="secondary"
       text
       rounded
       :disabled="!canOpenInHttpHistory"
-      :aria-label="`View in HTTP History ${historyIdLabel}`"
-      :title="`View in HTTP History ${historyIdLabel}`"
-      v-tooltip.top="'View in HTTP History'"
+      :aria-label="`Open in HTTP History ${historyIdLabel}`"
+      :title="`Open in HTTP History ${historyIdLabel}`"
+      v-tooltip.top="'Open in HTTP History'"
       @click.stop="emit('view', item)"
     />
 
     <Button
       type="button"
-      icon="fas fa-paper-plane"
+      icon="fas fa-sync-alt"
       size="small"
       severity="secondary"
       text
@@ -75,7 +75,7 @@ const requestIdLabel = computed(() => {
 
     <Button
       type="button"
-      icon="fas fa-times-circle"
+      icon="fas fa-box-open"
       size="small"
       severity="danger"
       text
