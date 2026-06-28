@@ -44,6 +44,7 @@ export type StashedRequestDetail = StashedRequest & {
         statusCode: number | undefined;
         headers: Record<string, string[]>;
         bodyText: string | undefined;
+        rawResponse: string | undefined;
       }
     | undefined;
 };
@@ -64,10 +65,10 @@ export type StashedRequestRow = NewStashedRequest & {
 };
 
 export type StashRequestDetails = {
-  method: string;
-  url: string;
-  host: string;
-  path: string;
+  method: string | undefined;
+  url: string | undefined;
+  host: string | undefined;
+  path: string | undefined;
   request: {
     headers: Record<string, string[]>;
     bodyText: string | undefined;
@@ -78,6 +79,7 @@ export type StashRequestDetails = {
         statusCode: number | undefined;
         headers: Record<string, string[]>;
         bodyText: string | undefined;
+        rawResponse: string | undefined;
       }
     | undefined;
 };

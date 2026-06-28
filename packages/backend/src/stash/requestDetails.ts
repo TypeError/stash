@@ -38,6 +38,7 @@ export async function loadRequestDetails(
             statusCode: pair.response.getCode(),
             headers: pair.response.getHeaders(),
             bodyText: readBodyText(pair.response.getBody()),
+            rawResponse: pair.response.getRaw().toText(),
           },
   };
 }

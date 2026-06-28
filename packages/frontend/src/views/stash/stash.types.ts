@@ -24,6 +24,7 @@ export type StashDetail = StashItem & {
         statusCode: number | undefined;
         headers: Record<string, string[]>;
         bodyText: string | undefined;
+        rawResponse: string | undefined;
       }
     | undefined;
 };

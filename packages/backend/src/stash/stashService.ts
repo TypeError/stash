@@ -15,8 +15,8 @@ import type {
   Result,
   StashRequestInput,
   StashedRequest,
-  StashedRequestDetail,
   StashedRequestRow,
+  StashedRequestDetail,
 } from "./stashTypes";
 
 function errorResult<T>(error: string): Result<T> {
