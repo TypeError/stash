@@ -1,9 +1,9 @@
 name: Validate
 
 on:
-  # push:
-  #   branches:
-  #     - "main"
+  push:
+    branches:
+      - "main"
   workflow_call:
 
 concurrency:
