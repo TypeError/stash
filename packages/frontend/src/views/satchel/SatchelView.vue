@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Card from "primevue/card";
 import Splitter from "primevue/splitter";
 import SplitterPanel from "primevue/splitterpanel";
 import { onMounted, onUnmounted, ref } from "vue";
@@ -28,7 +29,14 @@ async function loadItems() {
   error.value = undefined;
 
   try {
-    items.value = await listSatchelItems(sdk, 100, 0);
+    const result = await listSatchelItems(sdk, 100, 0);
+
+    if (result.kind === "Error") {
+      error.value = result.error;
+      return;
+    }
+
+    items.value = result.value;
   } catch (err) {
     error.value = err instanceof Error ? err.message : "Failed to load Satchel items";
   } finally {
@@ -45,7 +53,12 @@ async function handleDelete(item: SatchelItem) {
   try {
     const result = await deleteSatchelItem(sdk, item.id);
 
-    if (result.deleted) {
+    if (result.kind === "Error") {
+      sdk.window.showToast(result.error, { variant: "error" });
+      return;
+    }
+
+    if (result.value.deleted) {
       if (selectedItem.value?.id === item.id) {
         selectedItem.value = undefined;
       }
@@ -76,10 +89,16 @@ async function handleClear() {
 
   try {
     const result = await clearSatchelItems(sdk);
+
+    if (result.kind === "Error") {
+      sdk.window.showToast(result.error, { variant: "error" });
+      return;
+    }
+
     selectedItem.value = undefined;
     await loadItems();
     sdk.window.showToast(
-      `Cleared ${result.deletedItems} Satchel item${result.deletedItems === 1 ? "" : "s"}`,
+      `Cleared ${result.value.deletedItems} Satchel item${result.value.deletedItems === 1 ? "" : "s"}`,
       {
         variant: "success",
       },
@@ -118,7 +137,7 @@ onUnmounted(() => {
     <SatchelEmptyState v-else-if="!loading && items.length === 0" />
 
     <Splitter v-else class="h-[calc(100%-4rem)]">
-      <SplitterPanel :size="selectedItem === undefined ? 100 : 62" :min-size="40">
+      <SplitterPanel :size="62" :min-size="40">
         <div class="h-full overflow-auto pr-3">
           <SatchelTable
             :items="items"
@@ -129,9 +148,28 @@ onUnmounted(() => {
         </div>
       </SplitterPanel>
 
-      <SplitterPanel v-if="selectedItem !== undefined" :size="38" :min-size="25">
+      <SplitterPanel :size="38" :min-size="25">
         <div class="h-full pl-3">
           <SatchelDetailPanel :item="selectedItem" @close="selectedItem = undefined" />
+
+          <Card
+            v-if="selectedItem === undefined"
+            class="h-full"
+            :pt="{
+              body: { class: 'h-full p-0' },
+              content: { class: 'h-full flex items-center justify-center p-6' },
+            }"
+          >
+            <template #content>
+              <div class="max-w-sm text-center">
+                <i class="fas fa-eye mb-3 text-xl text-surface-500" aria-hidden="true" />
+                <h2 class="m-0 text-base font-semibold">Select a saved request</h2>
+                <p class="mt-2 mb-0 text-sm text-surface-400">
+                  Request and response details load from Caido when you click View.
+                </p>
+              </div>
+            </template>
+          </Card>
         </div>
       </SplitterPanel>
     </Splitter>

@@ -55,14 +55,19 @@ watch(
     loading.value = true;
 
     try {
-      const loadedDetail = await getSatchelItem(sdk, itemId);
+      const result = await getSatchelItem(sdk, itemId);
 
-      if (loadedDetail === undefined) {
+      if (result.kind === "Error") {
+        error.value = result.error;
+        return;
+      }
+
+      if (result.value === undefined) {
         error.value = "Satchel item not found";
         return;
       }
 
-      detail.value = loadedDetail;
+      detail.value = result.value;
     } catch (err) {
       error.value = err instanceof Error ? err.message : "Failed to load Satchel item";
     } finally {

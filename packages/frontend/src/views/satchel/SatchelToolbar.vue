@@ -18,7 +18,9 @@ defineEmits<{
     <div>
       <h1 class="m-0 text-xl font-semibold">Satchel</h1>
       <p class="mt-1 mb-0 text-sm text-surface-400">
-        {{ count }} saved request{{ count === 1 ? "" : "s" }}
+        Bookmark interesting HTTP History requests. {{ count }} saved request{{
+          count === 1 ? "" : "s"
+        }}.
       </p>
     </div>
 

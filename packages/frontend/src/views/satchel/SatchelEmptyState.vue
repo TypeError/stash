@@ -1,8 +1,22 @@
+<script setup lang="ts">
+import Card from "primevue/card";
+</script>
+
 <template>
-  <section class="border border-surface-700 rounded p-6 bg-surface-800 text-surface-100">
-    <h2 class="m-0 text-base font-semibold">No requests saved yet</h2>
-    <p class="mt-2 mb-0 text-sm text-surface-400">
-      Right-click a saved request in HTTP History and choose Add to Satchel.
-    </p>
-  </section>
+  <Card
+    :pt="{
+      body: { class: 'p-0' },
+      content: { class: 'p-6' },
+    }"
+  >
+    <template #content>
+      <section class="text-surface-100">
+        <i class="fas fa-suitcase mb-3 text-xl text-surface-500" aria-hidden="true" />
+        <h2 class="m-0 text-base font-semibold">No requests saved yet</h2>
+        <p class="mt-2 mb-0 text-sm text-surface-400">
+          Right-click a saved request in HTTP History and choose Add to Satchel.
+        </p>
+      </section>
+    </template>
+  </Card>
 </template>
