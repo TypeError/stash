@@ -26,6 +26,7 @@ Caido plugins are packaged through `caido.config.ts` and may include frontend an
 - Keep code close to where it changes.
 - Avoid large template blocks. Split complex UI into smaller components.
 - Declare variables close to first use.
+- Group related declarations near the code that uses them, such as event subscriptions next to lifecycle hooks.
 
 ## TypeScript Rules
 
@@ -40,6 +41,8 @@ Caido plugins are packaged through `caido.config.ts` and may include frontend an
 - Use `computed` for derived Vue state when possible.
 - Avoid alias-only types. Rename the type and fix references instead.
 - Use `knip` to remove unused code during large refactors if it is available.
+- Do not create an abstraction unless it removes real complexity.
+- Avoid helper functions when a simple inline expression is clearer.
 
 When checking nullable strings, handle empty and missing values explicitly instead of relying on broad falsy checks.
 
@@ -59,6 +62,8 @@ if (value !== undefined && value !== "") {
 ## Vue Components
 
 Use Vue with `<script setup lang="ts">`.
+
+Use PrimeVue components for UI controls and layout where possible.
 
 Prefer this structure for components that need more than one file:
 
@@ -248,9 +253,10 @@ Use PrimeVue components for plugin UI. Match Caido’s dark theme instead of inv
 - Prefer PrimeVue `Card`, `DataTable`, `Splitter`, and `SplitterPanel`.
 - Use `DataTable` for structured lists.
 - Put action columns at the end of tables.
-- Use empty states with short, useful copy.
+- Use empty states with short, useful copy and an icon when it improves clarity.
 - Use `fas fa-*` icons only.
 - Prefer surface tokens such as `bg-surface-800`, `bg-surface-700`, and `border-surface-700`.
+- Prefer built-in Tailwind values. Use dynamic values occasionally and globals rarely.
 - Avoid unnecessary custom colors.
 - Keep the UI minimal and consistent with Caido.
 
