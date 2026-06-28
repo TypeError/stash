@@ -55,9 +55,9 @@ if (value !== undefined && value !== "") {
 ## Naming
 
 - Folders use camelCase, such as `httpHistory`.
-- Component folders use PascalCase, such as `RequestBookmarkPanel`.
+- Component folders use PascalCase, such as `RequestStashPanel`.
 - Regular files use camelCase, such as `useSaved requests.ts`.
-- Command IDs should be namespaced, such as `stash.save-request`.
+- Command IDs should be namespaced, such as `stash.stash-request`.
 
 ## Vue Components
 
@@ -108,16 +108,16 @@ Register commands once, use namespaced IDs, and expose important commands throug
 
 ```ts
 const Commands = {
-  saveRequest: "stash.save-request",
+  stashRequest: "stash.stash-request",
 } as const;
 
-sdk.commands.register(Commands.saveRequest, {
-  name: "Save Request",
+sdk.commands.register(Commands.stashRequest, {
+  name: "Stash request",
   group: "Stash",
-  run: () => saveCurrentRequest(),
+  run: () => stashCurrentRequest(),
 });
 
-sdk.commandPalette.register(Commands.saveRequest);
+sdk.commandPalette.register(Commands.stashRequest);
 ```
 
 ## Backend SDK
@@ -127,17 +127,17 @@ Use the Caido backend SDK for API endpoints, data processing, and findings.
 ```ts
 import { type DefineAPI, type SDK } from "caido:plugin";
 
-function getSaved requests(sdk: SDK) {
-  sdk.console.log("Loading saved requests");
+function getStashed requests(sdk: SDK) {
+  sdk.console.log("Loading stashed requests");
   return [];
 }
 
 export type API = DefineAPI<{
-  getSaved requests: typeof getSaved requests;
+  getStashed requests: typeof getStashed requests;
 }>;
 
 export function init(sdk: SDK<API>) {
-  sdk.api.register("getSaved requests", getSaved requests);
+  sdk.api.register("getStashed requests", getStashed requests);
 }
 ```
 
@@ -147,7 +147,7 @@ Use backend events only when the frontend needs push-style updates.
 import { type DefineEvents, type SDK } from "caido:plugin";
 
 export type BackendEvents = DefineEvents<{
-  "saved requests-updated": { count: number };
+  "stashed requests-updated": { count: number };
 }>;
 
 export type CaidoBackendSDK = SDK<never, BackendEvents>;
@@ -164,14 +164,14 @@ export type Result<T> = { kind: "Ok"; value: T } | { kind: "Error"; error: strin
 Frontend callers should branch on `kind` and show a toast for errors.
 
 ```ts
-const result = await sdk.backend.saveBookmark(input);
+const result = await sdk.backend.stashRequest(input);
 
 if (result.kind === "Error") {
   sdk.window.showToast(result.error, { variant: "error" });
   return;
 }
 
-sdk.window.showToast("Bookmark saved", { variant: "success" });
+sdk.window.showToast("Request stashed", { variant: "success" });
 ```
 
 Only use `try`/`catch` at boundaries where an operation can realistically fail and the error can be turned into a useful `Result`.
@@ -185,9 +185,9 @@ Do not add runtime API existence checks.
 ```ts
 sdk.window.showToast("Saved", { variant: "success" });
 
-sdk.commands.register("stash.save-request", {
-  name: "Save Request",
-  run: () => saveCurrentRequest(),
+sdk.commands.register("stash.stash-request", {
+  name: "Stash request",
+  run: () => stashCurrentRequest(),
 });
 ```
 
