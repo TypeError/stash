@@ -29,13 +29,13 @@ defineEmits<{
   >
     <Column field="method" header="Method">
       <template #body="{ data }: { data: SatchelItem }">
-        <code>{{ data.method !== null && data.method.length > 0 ? data.method : "-" }}</code>
+        <code>{{ data.method !== undefined && data.method.length > 0 ? data.method : "-" }}</code>
       </template>
     </Column>
 
     <Column field="host" header="Host">
       <template #body="{ data }: { data: SatchelItem }">
-        {{ data.host !== null && data.host.length > 0 ? data.host : "-" }}
+        {{ data.host !== undefined && data.host.length > 0 ? data.host : "-" }}
       </template>
     </Column>
 

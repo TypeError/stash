@@ -22,7 +22,7 @@ const loading = ref(false);
 const error = ref<string>();
 
 const requestHeaders = computed(() => {
-  if (detail.value?.request === undefined || detail.value.request === null) {
+  if (detail.value?.request === undefined) {
     return [];
   }
 
@@ -30,7 +30,7 @@ const requestHeaders = computed(() => {
 });
 
 const responseHeaders = computed(() => {
-  if (detail.value?.response === undefined || detail.value.response === null) {
+  if (detail.value?.response === undefined) {
     return [];
   }
 
@@ -57,7 +57,7 @@ watch(
     try {
       const loadedDetail = await getSatchelItem(sdk, itemId);
 
-      if (loadedDetail === null) {
+      if (loadedDetail === undefined) {
         error.value = "Satchel item not found";
         return;
       }
@@ -87,8 +87,8 @@ watch(
         <div class="min-w-0">
           <h2 class="m-0 text-base font-semibold">Request detail</h2>
           <p class="mt-1 mb-0 text-sm text-surface-400 break-words">
-            {{ item.method !== null ? item.method : "-" }}
-            {{ item.url !== null ? item.url : "-" }}
+            {{ item.method !== undefined ? item.method : "-" }}
+            {{ item.url !== undefined ? item.url : "-" }}
           </p>
         </div>
 
@@ -122,19 +122,19 @@ watch(
               <div class="grid grid-cols-[8rem_1fr] gap-4">
                 <dt class="text-surface-400">Method</dt>
                 <dd class="m-0 break-words">
-                  {{ detail.method !== null ? detail.method : "-" }}
+                  {{ detail.method !== undefined ? detail.method : "-" }}
                 </dd>
               </div>
               <div class="grid grid-cols-[8rem_1fr] gap-4">
                 <dt class="text-surface-400">URL</dt>
                 <dd class="m-0 break-words">
-                  {{ detail.url !== null ? detail.url : "-" }}
+                  {{ detail.url !== undefined ? detail.url : "-" }}
                 </dd>
               </div>
               <div class="grid grid-cols-[8rem_1fr] gap-4">
                 <dt class="text-surface-400">Host</dt>
                 <dd class="m-0 break-words">
-                  {{ detail.host !== null && detail.host.length > 0 ? detail.host : "-" }}
+                  {{ detail.host !== undefined && detail.host.length > 0 ? detail.host : "-" }}
                 </dd>
               </div>
               <div class="grid grid-cols-[8rem_1fr] gap-4">
@@ -169,9 +169,7 @@ watch(
             <pre
               class="m-0 max-h-96 overflow-auto rounded border border-surface-700 p-3 text-xs whitespace-pre-wrap"
               >{{
-                detail.request?.bodyText !== undefined &&
-                detail.request.bodyText !== null &&
-                detail.request.bodyText.length > 0
+                detail.request?.bodyText !== undefined && detail.request.bodyText.length > 0
                   ? detail.request.bodyText
                   : "No body"
               }}</pre
@@ -183,21 +181,19 @@ watch(
             <pre
               class="m-0 max-h-96 overflow-auto rounded border border-surface-700 p-3 text-xs whitespace-pre-wrap"
               >{{
-                detail.request?.rawRequest !== undefined &&
-                detail.request.rawRequest !== null &&
-                detail.request.rawRequest.length > 0
+                detail.request?.rawRequest !== undefined && detail.request.rawRequest.length > 0
                   ? detail.request.rawRequest
                   : "No raw request available"
               }}</pre
             >
           </section>
 
-          <section v-if="detail.available && detail.response === null">
+          <section v-if="detail.available && detail.response === undefined">
             <h3 class="mt-0 mb-2 text-sm font-semibold">Response</h3>
             <p class="m-0 text-sm text-surface-400">No response available.</p>
           </section>
 
-          <section v-if="detail.available && detail.response !== null">
+          <section v-if="detail.available && detail.response !== undefined">
             <h3 class="mt-0 mb-2 text-sm font-semibold">Response headers</h3>
             <table class="w-full border-collapse text-sm">
               <tbody>
@@ -215,14 +211,12 @@ watch(
             </table>
           </section>
 
-          <section v-if="detail.available && detail.response !== null">
+          <section v-if="detail.available && detail.response !== undefined">
             <h3 class="mt-0 mb-2 text-sm font-semibold">Response body</h3>
             <pre
               class="m-0 max-h-96 overflow-auto rounded border border-surface-700 p-3 text-xs whitespace-pre-wrap"
               >{{
-                detail.response?.bodyText !== undefined &&
-                detail.response.bodyText !== null &&
-                detail.response.bodyText.length > 0
+                detail.response?.bodyText !== undefined && detail.response.bodyText.length > 0
                   ? detail.response.bodyText
                   : "No response body"
               }}</pre
