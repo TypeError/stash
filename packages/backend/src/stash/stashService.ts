@@ -4,13 +4,13 @@ import { createStashSaveFromCaidoRequest } from "./requestSave";
 import { loadRequestDetails } from "./requestDetails";
 import { emitStashUpdated } from "./stashEvents";
 import {
-  clearStashBookmarkRows,
-  deleteStashBookmarkRow,
-  getStashBookmarkRow,
-  insertStashBookmark,
-  listStashBookmarkRows,
+  clearStashSaveRows,
+  deleteStashSaveRow,
+  getStashSaveRow,
+  insertStashSave,
+  listStashSaveRows,
 } from "./stashRepository";
-import type { Events, Result, StashBookmarkRow, StashDetail, StashItem } from "./stashTypes";
+import type { Events, Result, StashDetail, StashItem, StashSaveRow } from "./stashTypes";
 
 function errorResult<T>(error: string): Result<T> {
   return { kind: "Error", error };
@@ -24,7 +24,7 @@ function messageFromError(err: unknown, fallback: string) {
   return err instanceof Error && err.message.length > 0 ? err.message : fallback;
 }
 
-function buildUnavailableDetail(row: StashBookmarkRow): StashDetail {
+function buildUnavailableDetail(row: StashSaveRow): StashDetail {
   return {
     ...buildItem(row),
     available: false,
@@ -33,7 +33,7 @@ function buildUnavailableDetail(row: StashBookmarkRow): StashDetail {
   };
 }
 
-function buildItem(row: StashBookmarkRow): StashItem {
+function buildItem(row: StashSaveRow): StashItem {
   return {
     id: row.id,
     caidoRequestId: row.caidoRequestId,
@@ -64,8 +64,8 @@ export async function addRequestsToStash(
         continue;
       }
 
-      const bookmark = createStashSaveFromCaidoRequest(pair.request, requestId);
-      const inserted = await insertStashBookmark(db, bookmark);
+      const save = createStashSaveFromCaidoRequest(pair.request, requestId);
+      const inserted = await insertStashSave(db, save);
 
       if (inserted) {
         added += 1;
@@ -80,7 +80,7 @@ export async function addRequestsToStash(
 
     return okResult({ added, skipped });
   } catch (err) {
-    return errorResult(messageFromError(err, "Could not save bookmark."));
+    return errorResult(messageFromError(err, "Could not save request."));
   }
 }
 
@@ -91,10 +91,10 @@ export async function listStashItems(
 ): Promise<Result<StashItem[]>> {
   try {
     const db = await sdk.meta.db();
-    const rows = await listStashBookmarkRows(db, limit, offset);
+    const rows = await listStashSaveRows(db, limit, offset);
     return okResult(rows.map(buildItem));
   } catch (err) {
-    return errorResult(messageFromError(err, "Could not load bookmarks."));
+    return errorResult(messageFromError(err, "Could not load saved requests."));
   }
 }
 
@@ -104,7 +104,7 @@ export async function getStashItem(
 ): Promise<Result<StashDetail | undefined>> {
   try {
     const db = await sdk.meta.db();
-    const row = await getStashBookmarkRow(db, itemId);
+    const row = await getStashSaveRow(db, itemId);
 
     if (row === undefined) {
       return okResult(undefined);
@@ -140,7 +140,7 @@ export async function deleteStashItem(
 ): Promise<Result<{ deleted: boolean }>> {
   try {
     const db = await sdk.meta.db();
-    const deletedRows = await deleteStashBookmarkRow(db, itemId);
+    const deletedRows = await deleteStashSaveRow(db, itemId);
 
     if (deletedRows === 0) {
       return okResult({ deleted: false });
@@ -150,7 +150,7 @@ export async function deleteStashItem(
 
     return okResult({ deleted: true });
   } catch (err) {
-    return errorResult(messageFromError(err, "Could not remove bookmark."));
+    return errorResult(messageFromError(err, "Could not remove saved request."));
   }
 }
 
@@ -159,7 +159,7 @@ export async function clearStashItems(
 ): Promise<Result<{ deletedItems: number }>> {
   try {
     const db = await sdk.meta.db();
-    const deletedItems = await clearStashBookmarkRows(db);
+    const deletedItems = await clearStashSaveRows(db);
 
     if (deletedItems > 0) {
       emitStashUpdated(sdk, "clear");
@@ -167,6 +167,6 @@ export async function clearStashItems(
 
     return okResult({ deletedItems });
   } catch (err) {
-    return errorResult(messageFromError(err, "Could not clear bookmarks."));
+    return errorResult(messageFromError(err, "Could not clear saved requests."));
   }
 }

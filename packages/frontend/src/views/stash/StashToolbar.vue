@@ -13,16 +13,15 @@ defineEmits<{
 </script>
 
 <template>
-  <header class="flex items-center justify-between gap-4 mb-4">
+  <header class="mb-4 flex items-center justify-between gap-4">
     <div>
       <h1 class="m-0 text-xl font-semibold">Stash</h1>
       <p class="mt-1 mb-0 text-sm text-surface-400">
-        Bookmark interesting HTTP History requests. {{ count }} saved request{{
+        Save interesting HTTP History requests for later. {{ count }} saved request{{
           count === 1 ? "" : "s"
         }}.
       </p>
     </div>
-
     <div class="flex items-center gap-2">
       <Button
         type="button"

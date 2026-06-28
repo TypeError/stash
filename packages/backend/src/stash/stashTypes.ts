@@ -41,7 +41,7 @@ export type StashDetail = StashItem & {
     | undefined;
 };
 
-export type NewStashBookmark = {
+export type NewStashSave = {
   caidoRequestId: string;
   method: string | undefined;
   url: string | undefined;
@@ -51,7 +51,7 @@ export type NewStashBookmark = {
   updatedAt: string;
 };
 
-export type StashBookmarkRow = NewStashBookmark & {
+export type StashSaveRow = NewStashSave & {
   id: number;
 };
 

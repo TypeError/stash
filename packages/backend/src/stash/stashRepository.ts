@@ -1,6 +1,6 @@
 import type { Database, Parameter } from "sqlite";
 
-import type { NewStashBookmark, StashBookmarkRow } from "./stashTypes";
+import type { NewStashSave, StashSaveRow } from "./stashTypes";
 
 function readString(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined;
@@ -18,7 +18,7 @@ function nullableParameter(value: string | undefined): Parameter {
   return value === undefined ? null : value;
 }
 
-function mapBookmarkRow(row: Record<string, unknown>): StashBookmarkRow {
+function mapStashSaveRow(row: Record<string, unknown>): StashSaveRow {
   return {
     id: readRequiredNumber(row.id),
     caidoRequestId: readRequiredString(row.caidoRequestId),
@@ -107,10 +107,7 @@ export async function migrateStashStorage(db: Database) {
   `);
 }
 
-export async function insertStashBookmark(
-  db: Database,
-  bookmark: NewStashBookmark,
-): Promise<boolean> {
+export async function insertStashSave(db: Database, save: NewStashSave): Promise<boolean> {
   const stmt = await db.prepare(`
     INSERT OR IGNORE INTO stash_items (
       caido_request_id,
@@ -125,23 +122,23 @@ export async function insertStashBookmark(
   `);
 
   const result = await stmt.run(
-    bookmark.caidoRequestId,
-    nullableParameter(bookmark.method),
-    nullableParameter(bookmark.url),
-    nullableParameter(bookmark.host),
-    nullableParameter(bookmark.path),
-    bookmark.createdAt,
-    bookmark.updatedAt,
+    save.caidoRequestId,
+    nullableParameter(save.method),
+    nullableParameter(save.url),
+    nullableParameter(save.host),
+    nullableParameter(save.path),
+    save.createdAt,
+    save.updatedAt,
   );
 
   return result.changes > 0;
 }
 
-export async function listStashBookmarkRows(
+export async function listStashSaveRows(
   db: Database,
   limit: number,
   offset: number,
-): Promise<StashBookmarkRow[]> {
+): Promise<StashSaveRow[]> {
   const stmt = await db.prepare(`
     SELECT
       id,
@@ -159,13 +156,13 @@ export async function listStashBookmarkRows(
   `);
 
   const rows = await stmt.all<Record<string, unknown>>(limit, offset);
-  return rows.map(mapBookmarkRow);
+  return rows.map(mapStashSaveRow);
 }
 
-export async function getStashBookmarkRow(
+export async function getStashSaveRow(
   db: Database,
   itemId: number,
-): Promise<StashBookmarkRow | undefined> {
+): Promise<StashSaveRow | undefined> {
   const stmt = await db.prepare(`
     SELECT
       id,
@@ -181,10 +178,10 @@ export async function getStashBookmarkRow(
   `);
 
   const row = await stmt.get<Record<string, unknown>>(itemId);
-  return row ? mapBookmarkRow(row) : undefined;
+  return row ? mapStashSaveRow(row) : undefined;
 }
 
-export async function deleteStashBookmarkRow(db: Database, itemId: number) {
+export async function deleteStashSaveRow(db: Database, itemId: number) {
   const stmt = await db.prepare(`
     DELETE FROM stash_items
     WHERE id = ?
@@ -194,7 +191,7 @@ export async function deleteStashBookmarkRow(db: Database, itemId: number) {
   return result.changes;
 }
 
-export async function clearStashBookmarkRows(db: Database) {
+export async function clearStashSaveRows(db: Database) {
   const stmt = await db.prepare("DELETE FROM stash_items");
   const result = await stmt.run();
   return result.changes;

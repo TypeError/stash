@@ -12,7 +12,7 @@ const id = "stash";
 export default defineConfig({
   id,
   name: "Stash",
-  description: "Bookmark and organize Caido HTTP history items for later review.",
+  description: "Save interesting HTTP History requests for later review.",
   version: "0.1.0",
   author: {
     name: "Caleb Kinney",
