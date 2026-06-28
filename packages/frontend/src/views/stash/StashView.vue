@@ -83,7 +83,7 @@ async function loadItems() {
   }
 }
 
-async function handleDelete(item: StashItem) {
+async function handleUnstash(item: StashItem) {
   if (sdk === undefined) {
     error.value = "Caido SDK is not available";
     return;
@@ -175,9 +175,9 @@ onUnmounted(() => {
         <StashTable
           :items="items"
           :loading="loading"
-          @open="handleOpenInHttpHistory"
+          @view="handleOpenInHttpHistory"
           @show-stashed="handleShowStashedInHttpHistory"
-          @delete="handleDelete"
+          @unstash="handleUnstash"
         />
       </div>
     </div>

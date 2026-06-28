@@ -1,5 +1,8 @@
 import type { FrontendSDK } from "@/types";
+
 import type { StashItem } from "./stash.types";
+
+type HttpHistoryQuery = Parameters<FrontendSDK["httpHistory"]["setQuery"]>[0];
 
 const httpHistoryPath = "/http-history";
 
@@ -17,24 +20,24 @@ export function getUniqueHttpHistoryRowIds(items: StashItem[]) {
   return Array.from(new Set(rowIds));
 }
 
-export function createHttpHistoryRowsQuery(
-  rowIds: string[],
-): Parameters<FrontendSDK["httpHistory"]["setQuery"]>[0] {
-  return `(${rowIds.map((rowId) => `row.id.eq:${rowId}`).join(" OR ")})` as Parameters<
-    FrontendSDK["httpHistory"]["setQuery"]
-  >[0];
+export function createHttpHistoryRowsQuery(rowIds: string[]): HttpHistoryQuery {
+  return `(${rowIds.map((rowId) => `row.id.eq:${rowId}`).join(" OR ")})` as HttpHistoryQuery;
 }
 
 export function showHttpHistoryRows(sdk: FrontendSDK | undefined, rowIds: string[]) {
-  if (sdk === undefined || rowIds.length === 0) {
+  const httpHistoryRowIds = rowIds.filter(isHttpHistoryRowId);
+
+  if (sdk === undefined || httpHistoryRowIds.length === 0) {
     return;
   }
 
-  sdk.navigation.goTo(httpHistoryPath);
+  const query = createHttpHistoryRowsQuery(httpHistoryRowIds);
 
-  window.setTimeout(() => {
-    sdk.httpHistory.setQuery(createHttpHistoryRowsQuery(rowIds));
-  }, 100);
+  if (sdk.httpHistory.getQuery() !== query) {
+    sdk.httpHistory.setQuery(query);
+  }
+
+  sdk.navigation.goTo(httpHistoryPath);
 }
 
 export function showHttpHistoryRow(sdk: FrontendSDK | undefined, requestId: string | undefined) {

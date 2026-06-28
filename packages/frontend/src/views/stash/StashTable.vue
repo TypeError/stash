@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import Button from "primevue/button";
+import Column from "primevue/column";
+import DataTable from "primevue/datatable";
 import { computed } from "vue";
 
-import StashTableRow from "./StashTableRow.vue";
+import StashTableActions from "./StashTableActions.vue";
+import { formatPath, formatStashedAt } from "./stash.format";
+import { isHttpHistoryRowId } from "./stash.httpHistory";
 import type { StashItem } from "./stash.types.js";
 
 const props = defineProps<{
@@ -11,17 +15,17 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  open: [item: StashItem];
+  view: [item: StashItem];
   showStashed: [];
-  delete: [item: StashItem];
+  unstash: [item: StashItem];
 }>();
 
 const hasStashedRequestIds = computed(() => {
-  return props.items.some((item) => hasRequestId(item));
+  return props.items.some((item) => isHttpHistoryRowId(item.caidoRequestId));
 });
 
-function hasRequestId(item: StashItem) {
-  return item.caidoRequestId !== undefined && item.caidoRequestId.length > 0;
+function formatText(value: string | undefined) {
+  return value !== undefined && value.length > 0 ? value : "-";
 }
 </script>
 
@@ -39,38 +43,85 @@ function hasRequestId(item: StashItem) {
       />
     </div>
 
-    <div class="overflow-hidden rounded border border-surface-700">
-      <table class="stash-table w-full border-collapse text-sm">
-        <thead class="bg-surface-800 text-left text-surface-300">
-          <tr>
-            <th class="px-3 py-2 font-medium">History ID</th>
-            <th class="px-3 py-2 font-medium">Method</th>
-            <th class="px-3 py-2 font-medium">Host</th>
-            <th class="px-3 py-2 font-medium">Path</th>
-            <th class="px-3 py-2 font-medium">Stashed At</th>
-            <th class="px-3 py-2 text-right font-medium">Actions</th>
-          </tr>
-        </thead>
+    <DataTable
+      :value="props.items"
+      dataKey="id"
+      :loading="props.loading"
+      paginator
+      :rows="25"
+      :rowsPerPageOptions="[10, 25, 50]"
+      :alwaysShowPaginator="false"
+      currentPageReportTemplate="{first}-{last} of {totalRecords}"
+      paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+      sortField="createdAt"
+      :sortOrder="-1"
+      removableSort
+      rowHover
+      stripedRows
+      size="small"
+      class="stash-table"
+      :tableProps="{ 'aria-label': 'Stashed HTTP history requests' }"
+    >
+      <template #empty>
+        <div class="px-3 py-4 text-sm text-surface-400">No stashed requests found.</div>
+      </template>
 
-        <tbody>
-          <tr v-if="props.loading">
-            <td class="px-3 py-4 text-surface-400" colspan="6">Loading stashed requests...</td>
-          </tr>
+      <Column field="caidoRequestId" header="History ID" sortable>
+        <template #body="{ data }">
+          <span
+            class="block max-w-[8rem] overflow-hidden text-ellipsis whitespace-nowrap font-mono text-xs"
+            :title="formatText(data.caidoRequestId)"
+          >
+            {{ formatText(data.caidoRequestId) }}
+          </span>
+        </template>
+      </Column>
 
-          <tr v-else-if="props.items.length === 0">
-            <td class="px-3 py-4 text-surface-400" colspan="6">No stashed requests found.</td>
-          </tr>
+      <Column field="method" header="Method" sortable>
+        <template #body="{ data }">
+          <code>{{ formatText(data.method) }}</code>
+        </template>
+      </Column>
 
-          <StashTableRow
-            v-for="item in props.items"
-            v-else
-            :key="item.id"
-            :item="item"
-            @open="emit('open', $event)"
-            @delete="emit('delete', $event)"
+      <Column field="host" header="Host" sortable>
+        <template #body="{ data }">
+          <span
+            class="block max-w-[20rem] overflow-hidden text-ellipsis whitespace-nowrap"
+            :title="formatText(data.host)"
+          >
+            {{ formatText(data.host) }}
+          </span>
+        </template>
+      </Column>
+
+      <Column field="path" header="Path" sortable>
+        <template #body="{ data }">
+          <span
+            class="block max-w-[32rem] overflow-hidden text-ellipsis whitespace-nowrap"
+            :title="formatPath(data.path)"
+          >
+            {{ formatPath(data.path) }}
+          </span>
+        </template>
+      </Column>
+
+      <Column field="createdAt" header="Stashed At" sortable>
+        <template #body="{ data }">
+          <span class="whitespace-nowrap">
+            {{ formatStashedAt(data.createdAt) }}
+          </span>
+        </template>
+      </Column>
+
+      <Column header="Actions">
+        <template #body="{ data }">
+          <StashTableActions
+            :item="data"
+            @view="emit('view', $event)"
+            @unstash="emit('unstash', $event)"
           />
-        </tbody>
-      </table>
-    </div>
+        </template>
+      </Column>
+    </DataTable>
   </div>
 </template>
