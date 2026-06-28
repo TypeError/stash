@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import Button from "primevue/button";
+import Dialog from "primevue/dialog";
+import Message from "primevue/message";
 import { computed, onMounted, onUnmounted, ref } from "vue";
 
 import { useSDK } from "@/plugins/sdk";
@@ -29,6 +32,8 @@ const error = ref<string>();
 const searchQuery = ref("");
 const detailVisible = ref(false);
 const detailLoading = ref(false);
+const clearConfirmVisible = ref(false);
+const clearing = ref(false);
 const detailError = ref<string>();
 const selectedDetail = ref<StashDetail>();
 
@@ -38,6 +43,10 @@ const stashedHttpHistoryIds = computed(() => {
 
 const canShowStashedInHttpHistory = computed(() => {
   return stashedHttpHistoryIds.value.length > 0;
+});
+
+const toolbarLoading = computed(() => {
+  return loading.value || clearing.value;
 });
 
 const normalizedSearchQuery = computed(() => {
@@ -67,13 +76,13 @@ const filteredItems = computed(() => {
 
 const tableEmptyMessage = computed(() => {
   return normalizedSearchQuery.value === ""
-    ? "No requests stashed yet."
-    : "No matching stashed requests.";
+    ? "No stashed requests yet"
+    : "No matching stashed requests";
 });
 
 const tableEmptyDescription = computed(() => {
   return normalizedSearchQuery.value === ""
-    ? "Stash requests from HTTP History to keep them easy to find later."
+    ? "Use the context menu or command palette to stash requests from HTTP History."
     : "Try a different ID, method, host, path, or URL.";
 });
 
@@ -200,17 +209,26 @@ async function handleUnstash(item: StashItem) {
   }
 }
 
-async function handleClear() {
+function handleClear() {
   if (sdk === undefined) {
     error.value = "Caido SDK is not available";
     return;
   }
 
-  const confirmed = window.confirm("Clear all stashed requests from Stash?");
-
-  if (!confirmed) {
+  if (items.value.length === 0 || loading.value || clearing.value) {
     return;
   }
+
+  clearConfirmVisible.value = true;
+}
+
+async function confirmClear() {
+  if (sdk === undefined) {
+    error.value = "Caido SDK is not available";
+    return;
+  }
+
+  clearing.value = true;
 
   try {
     const result = await clearStash(sdk);
@@ -221,6 +239,7 @@ async function handleClear() {
     }
 
     await loadItems();
+    clearConfirmVisible.value = false;
     detailVisible.value = false;
     selectedDetail.value = undefined;
     sdk.window.showToast("Cleared Stash.", {
@@ -230,6 +249,8 @@ async function handleClear() {
     sdk.window.showToast(err instanceof Error ? err.message : "Could not clear Stash.", {
       variant: "error",
     });
+  } finally {
+    clearing.value = false;
   }
 }
 
@@ -267,7 +288,7 @@ onUnmounted(() => {
       <StashToolbar
         :can-show-stashed="canShowStashedInHttpHistory"
         :count="items.length"
-        :loading="loading"
+        :loading="toolbarLoading"
         :search-query="searchQuery"
         @clear="handleClear"
         @refresh="loadItems"
@@ -275,13 +296,9 @@ onUnmounted(() => {
         @update:search-query="searchQuery = $event"
       />
 
-      <div
-        v-if="error !== undefined"
-        class="rounded border border-danger-700 bg-danger-900/20 px-3 py-2 text-sm text-danger-200"
-        role="alert"
-      >
+      <Message v-if="error !== undefined" severity="error" :closable="false">
         {{ error }}
-      </div>
+      </Message>
 
       <StashEmptyState v-else-if="!loading && items.length === 0" />
 
@@ -304,6 +321,45 @@ onUnmounted(() => {
         :error="detailError"
         :loading="detailLoading"
       />
+
+      <Dialog
+        v-model:visible="clearConfirmVisible"
+        modal
+        header="Clear Stash?"
+        :draggable="false"
+        :dismissableMask="!clearing"
+        :style="{ width: 'min(28rem, calc(100vw - 2rem))' }"
+        :pt="{
+          header: { class: 'px-5 pt-5 pb-2' },
+          content: { class: 'px-5 pb-0' },
+          footer: { class: 'px-5 pb-5 pt-4' },
+        }"
+      >
+        <p class="m-0 text-sm leading-5 text-surface-300">
+          This will remove all stashed requests. The original HTTP History items will not be
+          deleted.
+        </p>
+
+        <template #footer>
+          <Button
+            type="button"
+            label="Cancel"
+            severity="secondary"
+            text
+            :disabled="clearing"
+            @click="clearConfirmVisible = false"
+          />
+
+          <Button
+            type="button"
+            label="Clear Stash"
+            icon="fas fa-broom"
+            severity="danger"
+            :loading="clearing"
+            @click="confirmClear"
+          />
+        </template>
+      </Dialog>
     </div>
   </main>
 </template>
