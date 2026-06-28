@@ -10,8 +10,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  open: [item: StashItem];
-  delete: [item: StashItem];
+  view: [item: StashItem];
+  unstash: [item: StashItem];
 }>();
 
 const canOpenInHttpHistory = computed(() => {
@@ -51,21 +51,21 @@ const canOpenInHttpHistory = computed(() => {
       <div class="flex justify-end gap-2">
         <Button
           type="button"
-          label="Open"
-          icon="fas fa-arrow-up-right-from-square"
+          label="View"
+          icon="fas fa-external-link-alt"
           size="small"
           severity="secondary"
           :disabled="!canOpenInHttpHistory"
-          @click.stop="emit('open', item)"
+          @click.stop="emit('view', item)"
         />
 
         <Button
           type="button"
-          label="Delete"
-          icon="fas fa-trash"
+          label="Unstash"
+          icon="fas fa-times-circle"
           size="small"
           severity="danger"
-          @click.stop="emit('delete', item)"
+          @click.stop="emit('unstash', item)"
         />
       </div>
     </td>

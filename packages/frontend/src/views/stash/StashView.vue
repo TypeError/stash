@@ -5,7 +5,7 @@ import { useSDK } from "@/plugins/sdk";
 import StashEmptyState from "./StashEmptyState.vue";
 import StashTable from "./StashTable.vue";
 import StashToolbar from "./StashToolbar.vue";
-import { clearStashItems, deleteStashItem as unstashItem, listStashItems } from "./stash.api.js";
+import { clearStash, unstashRequest as unstashItem, listStashedRequests } from "./stash.api.js";
 import {
   getUniqueHttpHistoryRowIds,
   isHttpHistoryRowId,
@@ -68,7 +68,7 @@ async function loadItems() {
   error.value = undefined;
 
   try {
-    const result = await listStashItems(sdk, 100, 0);
+    const result = await listStashedRequests(sdk, 100, 0);
 
     if (result.kind === "Error") {
       error.value = result.error;
@@ -97,7 +97,7 @@ async function handleDelete(item: StashItem) {
       return;
     }
 
-    if (result.value.deleted) {
+    if (result.value.unstashed) {
       await loadItems();
       sdk.window.showToast("Unstashed request", { variant: "success" });
     }
@@ -123,7 +123,7 @@ async function handleClear() {
   }
 
   try {
-    const result = await clearStashItems(sdk);
+    const result = await clearStash(sdk);
 
     if (result.kind === "Error") {
       sdk.window.showToast(result.error, { variant: "error" });
@@ -132,7 +132,7 @@ async function handleClear() {
 
     await loadItems();
     sdk.window.showToast(
-      `Cleared ${result.value.deletedItems} stashed request${result.value.deletedItems === 1 ? "" : "s"}`,
+      `Cleared ${result.value.unstashed} stashed request${result.value.unstashed === 1 ? "" : "s"}`,
       {
         variant: "success",
       },

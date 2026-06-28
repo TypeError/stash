@@ -105,13 +105,13 @@ function registerStashCommands(sdk: FrontendSDK) {
   sdk.menu.registerItem({
     type: "RequestRow",
     commandId: Commands.stashSelectedRequests,
-    leadingIcon: "fas fa-suitcase",
+    leadingIcon: "fas fa-bookmark",
   });
 
   sdk.menu.registerItem({
     type: "Response",
     commandId: Commands.stashRequest,
-    leadingIcon: "fas fa-suitcase",
+    leadingIcon: "fas fa-bookmark",
   });
 }
 
@@ -180,6 +180,6 @@ export const init = (sdk: FrontendSDK) => {
   });
 
   sdk.sidebar.registerItem("Stash", "/stash", {
-    icon: "fas fa-suitcase",
+    icon: "fas fa-box",
   });
 };

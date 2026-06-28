@@ -3,18 +3,18 @@ import type { API, Events } from "backend";
 
 type CaidoSDK = Caido<API, Events>;
 
-export function listStashItems(sdk: CaidoSDK, limit = 100, offset = 0) {
-  return sdk.backend.listItems(limit, offset);
+export function listStashedRequests(sdk: CaidoSDK, limit = 100, offset = 0) {
+  return sdk.backend.listStashedRequests(limit, offset);
 }
 
-export function getStashItem(sdk: CaidoSDK, itemId: number) {
-  return sdk.backend.getItem(itemId);
+export function getStashedRequest(sdk: CaidoSDK, stashedRequestId: number) {
+  return sdk.backend.getStashedRequest(stashedRequestId);
 }
 
-export function deleteStashItem(sdk: CaidoSDK, itemId: number) {
-  return sdk.backend.deleteItem(itemId);
+export function unstashRequest(sdk: CaidoSDK, stashedRequestId: number) {
+  return sdk.backend.unstashRequest(stashedRequestId);
 }
 
-export function clearStashItems(sdk: CaidoSDK) {
-  return sdk.backend.clearItems();
+export function clearStash(sdk: CaidoSDK) {
+  return sdk.backend.clearStash();
 }

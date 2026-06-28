@@ -43,11 +43,11 @@ function hasRequestId(item: StashItem) {
       <table class="stash-table w-full border-collapse text-sm">
         <thead class="bg-surface-800 text-left text-surface-300">
           <tr>
-            <th class="px-3 py-2 font-medium">ID</th>
+            <th class="px-3 py-2 font-medium">History ID</th>
             <th class="px-3 py-2 font-medium">Method</th>
             <th class="px-3 py-2 font-medium">Host</th>
             <th class="px-3 py-2 font-medium">Path</th>
-            <th class="px-3 py-2 font-medium">Stashed</th>
+            <th class="px-3 py-2 font-medium">Stashed At</th>
             <th class="px-3 py-2 text-right font-medium">Actions</th>
           </tr>
         </thead>

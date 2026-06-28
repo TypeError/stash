@@ -17,16 +17,17 @@ defineEmits<{
     <div>
       <h1 class="m-0 text-xl font-semibold">Stash</h1>
       <p class="mt-1 mb-0 text-sm text-surface-400">
-        Stash interesting HTTP History requests for later. {{ count }} stashed request{{
+        Stash interesting HTTP History requests for later. {{ count }} request{{
           count === 1 ? "" : "s"
-        }}.
+        }}
+        stashed.
       </p>
     </div>
     <div class="flex items-center gap-2">
       <Button
         type="button"
-        label="Clear All"
-        icon="fas fa-trash"
+        label="Clear Stash"
+        icon="fas fa-broom"
         size="small"
         severity="danger"
         :disabled="count === 0 || loading"
@@ -35,7 +36,7 @@ defineEmits<{
       <Button
         type="button"
         label="Refresh"
-        icon="fas fa-rotate"
+        icon="fas fa-sync-alt"
         size="small"
         severity="secondary"
         :loading="loading"
