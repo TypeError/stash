@@ -1,26 +1,38 @@
 # Stash
 
-Stash is a Caido plugin for keeping interesting HTTP History requests easy to find, review, and reopen later.
+Stash is a Caido plugin for bookmarking interesting HTTP History requests so they are easy to find, review, and reopen later.
 
-It is intentionally lightweight. Stash stores the Caido request ID, the HTTP History row ID when available, and a small display cache. Full request and response details are loaded from Caido only when needed. Caido HTTP History remains the source of truth.
+HTTP History moves fast during testing. A useful request can get buried while you explore an app, validate behavior, chase a weird edge case, or prepare a report.
 
-## Motivation
+Stash gives you a simple loop:
 
-I was watching [Becoming a Caido Power User](https://www.youtube.com/watch?v=_Y0oexpt-R8&t=389s), a talk by Justin Gardner from Bug Bounty Village at DEF CON 33, and saw his wishlist slide for a bookmarks plugin. As Caido has become a bigger part of my hacking workflow, this felt like the right challenge to take on given my work on the Burp Suite [Bookmarks](https://github.com/TypeError/Bookmarks) extension.
+1. Find something worth coming back to
+2. Stash it
+3. Keep testing
+4. Reopen it when needed
+5. Unstash it when done
 
-HTTP History moves fast during testing. Useful requests can get buried while you explore an application, validate behavior, triage findings, or prepare a report. Stash adds one focused loop for keeping track of requests worth returning to.
+## Why Use Stash?
 
-## What It Does
+Use Stash when a request is not ready for Replay, not ready for a report, and not something you want to lose.
 
-Stash adds a lightweight bookmark workflow to Caido HTTP History.
+Good candidates include:
 
-Use it when you find a request worth returning to during testing, triage, review, or reporting.
+- Suspicious auth behavior
+- Interesting parameters
+- Weird redirects
+- Useful API endpoints
+- Requests tied to a potential finding
+- Setup requests needed for later testing
+- Evidence you may want to review before reporting
+
+Stash keeps those requests in one focused place without turning HTTP History into a second task list.
+
+## Features
 
 Stash v1 supports:
 
-- Stashing selected HTTP History requests from the context menu
-- Stashing requests from supported request and response contexts
-- Stashing selected HTTP History requests from the command palette when rows are selected
+- Stashing HTTP History requests from context menus, supported request and response contexts, and the command palette
 - Opening the Stash page from the command palette or with `Alt+Shift+S`
 - Searching stashed requests by ID, method, host, path, or URL
 - Viewing stashed requests in a dedicated table
@@ -28,96 +40,34 @@ Stash v1 supports:
 - Sending a stashed request to Replay
 - Showing stashed requests in HTTP History
 - Unstashing a single request
-- Clearing the full Stash
+- Clearing the entire Stash
 - Preserving stashed requests across reloads
 
-## What It Does Not Do
+## Built for Caido Workflows
 
-Stash v1 is intentionally not a full case-management system.
+Stash is designed to stay close to how Caido users already work.
 
-It does not include:
+You can stash requests from HTTP History, jump back to them from the Stash page, send them to Replay, or show them again in HTTP History when you need more context.
 
-- Tags
-- Notes
-- Folders
-- Export
-- Snapshots
-- Bulk editing
-- Request or response duplication
+The goal is not to replace Replay, Findings, or HTTP History. The goal is to add a lightweight holding area for requests that deserve another look.
 
-Those features may be useful later, but v1 focuses on one reliable loop:
+## How It Works
 
-1. Find an interesting request in HTTP History
-2. Stash it
-3. Return to it later
-4. Open it when needed
-5. Unstash it when done
+Stash keeps lightweight references to Caido HTTP History requests.
 
-## Storage Model
+It stores the Caido request ID, the HTTP History row ID when available, and a small display cache for the table. Full request and response details are loaded from Caido only when you open a stashed request.
 
-Stash stores lightweight rows in the plugin SQLite database.
+Caido HTTP History remains the source of truth. Unstashing a request or clearing Stash does not remove anything from Caido HTTP History.
 
-| Column            | Purpose                             |
-| ----------------- | ----------------------------------- |
-| `id`              | Internal Stash row ID               |
-| `request_id`      | Canonical Caido request ID          |
-| `http_history_id` | HTTP History row ID, when available |
-| `method`          | Cached display method               |
-| `url`             | Cached display URL                  |
-| `host`            | Cached display host                 |
-| `path`            | Cached display path                 |
-| `created_at`      | Time the request was stashed        |
-| `updated_at`      | Time the Stash row was last updated |
+## Motivation
 
-The `request_id` is used for Caido request lookup, deduplication, and Replay. The `http_history_id` is used only for HTTP History UI behavior, such as showing stashed requests in HTTP History.
+The idea came from Justin Gardner’s [Becoming a Caido Power User](https://www.youtube.com/watch?v=_Y0oexpt-R8&t=389s) talk at Bug Bounty Village during DEF CON 33, where he called out a bookmarks plugin as part of his Caido wishlist.
 
-Stash does not store full request bodies or full response bodies. Full request and response content is loaded from Caido on demand.
-
-Unstashing a request or clearing Stash only removes Stash rows. It does not remove anything from Caido HTTP History.
-
-## Project Structure
-
-```txt
-packages/
-  backend/
-    src/
-      api/
-      db/
-      stash/
-  frontend/
-    src/
-      views/
-        stash/
-```
-
-### Backend
-
-`packages/backend` contains API registration, SQLite storage, migration logic, and Caido request detail loading.
-
-Important files:
-
-- `packages/backend/src/api/stashApi.ts` registers the backend API surface.
-- `packages/backend/src/stash/stashRepository.ts` owns Stash SQL.
-- `packages/backend/src/stash/requestDetails.ts` loads full request and response details from Caido on demand.
-
-### Frontend
-
-`packages/frontend` contains the Stash page, table, detail dialog, commands, and menu registration.
-
-Important files:
-
-- `packages/frontend/src/views/stash/StashView.vue` owns the page state and workflows.
-- `packages/frontend/src/views/stash/StashTable.vue` renders the stashed request table.
-- `packages/frontend/src/views/stash/StashDetailDialog.vue` shows request and response details loaded from Caido.
-- `packages/frontend/src/views/stash/stash.commands.ts` registers commands and context menu entries.
-- `packages/frontend/src/views/stash/stash.httpHistory.ts` handles HTTP History filtering.
-- `packages/frontend/src/views/stash/stash.replay.ts` sends stashed requests to Replay.
-
-The frontend lists lightweight cached rows first, then fetches full details only when the user opens a stashed request.
+That stuck with me. I had already built [Bookmarks](https://github.com/TypeError/Bookmarks) for Burp Suite, and Caido has become a bigger part of my own hacking workflow. Stash felt like the right Caido plugin to build first: small, practical, and directly tied to how testers move through HTTP History.
 
 ## Development
 
-This project uses Vite+.
+This project uses Vite+ for development.
 
 Install dependencies:
 
@@ -147,4 +97,4 @@ vp run build
 
 Issues, ideas, and workflow feedback are welcome, especially from people using Caido for bug bounty, AppSec, security testing, or review workflows.
 
-Stash is intentionally focused for v1, but practical feedback will help shape what should come next.
+Stash is intentionally focused for v1. Practical feedback will help shape what should come next.
