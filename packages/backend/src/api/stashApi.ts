@@ -4,6 +4,7 @@ import {
   clearStash,
   getStashedRequest,
   listStashedRequests,
+  stashHttpHistoryRequests,
   stashRequests,
   unstashRequest,
 } from "../stash/stashService";
@@ -12,6 +13,10 @@ import type { API, Events, StashRequestInput } from "../stash/stashTypes";
 export function registerStashApi(sdk: SDK<API, Events>) {
   sdk.api.register("stashRequests", (_sdk, inputs: StashRequestInput[]) => {
     return stashRequests(sdk, inputs);
+  });
+
+  sdk.api.register("stashHttpHistoryRequests", (_sdk, httpHistoryIds: string[]) => {
+    return stashHttpHistoryRequests(sdk, httpHistoryIds);
   });
 
   sdk.api.register("listStashedRequests", (_sdk, limit = 100, offset = 0) => {

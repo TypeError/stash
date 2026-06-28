@@ -4,6 +4,7 @@ import type {
   clearStash,
   getStashedRequest,
   listStashedRequests,
+  stashHttpHistoryRequests,
   stashRequests,
   unstashRequest,
 } from "./stashService";
@@ -87,6 +88,7 @@ export type Events = DefineEvents<{
 
 export type API = DefineAPI<{
   stashRequests: typeof stashRequests;
+  stashHttpHistoryRequests: typeof stashHttpHistoryRequests;
   listStashedRequests: typeof listStashedRequests;
   getStashedRequest: typeof getStashedRequest;
   unstashRequest: typeof unstashRequest;

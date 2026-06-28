@@ -54,6 +54,23 @@ function buildStashedRequest(row: StashedRequestRow): StashedRequest {
   };
 }
 
+async function getStashInputFromHttpHistoryId(
+  sdk: SDK,
+  httpHistoryId: string,
+): Promise<StashRequestInput | undefined> {
+  const page = await sdk.requests.query().filter(`row.id.eq:${httpHistoryId}`).first(1).execute();
+  const item = page.items[0];
+
+  if (item === undefined) {
+    return undefined;
+  }
+
+  return {
+    requestId: String(item.request.getId()),
+    httpHistoryId,
+  };
+}
+
 export async function stashRequests(
   sdk: SDK<unknown, Events>,
   inputs: StashRequestInput[],
@@ -98,6 +115,39 @@ export async function stashRequests(
     return okResult({ stashed, skipped });
   } catch (err) {
     return errorResult(messageFromError(err, "Could not stash request."));
+  }
+}
+
+export async function stashHttpHistoryRequests(
+  sdk: SDK<unknown, Events>,
+  httpHistoryIds: string[],
+): Promise<Result<{ stashed: number; skipped: number }>> {
+  try {
+    const inputs: StashRequestInput[] = [];
+    let skipped = 0;
+
+    for (const httpHistoryId of httpHistoryIds) {
+      const input = await getStashInputFromHttpHistoryId(sdk, httpHistoryId);
+
+      if (input === undefined) {
+        skipped += 1;
+      } else {
+        inputs.push(input);
+      }
+    }
+
+    const result = await stashRequests(sdk, inputs);
+
+    if (result.kind === "Error") {
+      return result;
+    }
+
+    return okResult({
+      stashed: result.value.stashed,
+      skipped: result.value.skipped + skipped,
+    });
+  } catch (err) {
+    return errorResult(messageFromError(err, "Could not stash selected requests."));
   }
 }
 
